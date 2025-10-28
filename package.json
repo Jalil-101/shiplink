@@ -1,0 +1,35 @@
+{
+  "name": "shiplink-fullstack",
+  "version": "1.0.0",
+  "description": "ShipLink - Full Stack Logistics Platform (Frontend + Backend)",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" --names \"FRONTEND,BACKEND\" --prefix-colors \"cyan,magenta\"",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && npm run dev",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ..",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start:backend": "cd backend && npm start",
+    "clean": "rimraf frontend/node_modules backend/node_modules node_modules",
+    "clean:frontend": "cd frontend && rimraf node_modules",
+    "clean:backend": "cd backend && rimraf node_modules"
+  },
+  "keywords": [
+    "shiplink",
+    "logistics",
+    "delivery",
+    "mobile-app",
+    "react-native",
+    "express",
+    "mongodb"
+  ],
+  "author": "ShipLink Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.5"
+  }
+}
