@@ -37,11 +37,11 @@ shiplink-fullstack/
 **Run this ONE command:**
 
 ```powershell
-git subtree pull --prefix backend backend-upstream master --squash
+git subtree pull --prefix backend backend-upstream main --squash
 ```
 
 **What this does:**
-1. ✅ Fetches latest code from backend team's `master` branch
+1. ✅ Fetches latest code from backend team's `main` branch
 2. ✅ Merges it into your `backend/` folder
 3. ✅ Creates a single commit (squash) so your history stays clean
 4. ✅ Automatically handles conflicts if any
@@ -53,13 +53,13 @@ git subtree pull --prefix backend backend-upstream master --squash
 #### 1️⃣ Check for Backend Team Updates
 ```powershell
 # Fetch latest info from backend team's repo
-git fetch backend-upstream master
+git fetch backend-upstream main
 ```
 
 #### 2️⃣ Pull Backend Updates
 ```powershell
 # Sync backend code
-git subtree pull --prefix backend backend-upstream master --squash
+git subtree pull --prefix backend backend-upstream main --squash
 ```
 
 **If there are conflicts:**
@@ -96,7 +96,7 @@ git push origin master
 # ========== START: Backend team just pushed updates ==========
 
 # Step 1: Sync backend updates
-git subtree pull --prefix backend backend-upstream master --squash
+git subtree pull --prefix backend backend-upstream main --squash
 
 # Step 2: Test locally
 cd backend
@@ -136,7 +136,7 @@ git push origin master
 
 **Solution:**
 ```powershell
-git subtree pull --prefix backend backend-upstream master --squash --allow-unrelated-histories
+git subtree pull --prefix backend backend-upstream main --squash --allow-unrelated-histories
 ```
 
 ### Issue: Merge conflicts
@@ -156,8 +156,8 @@ git subtree pull --prefix backend backend-upstream master --squash --allow-unrel
 **Before syncing:**
 ```powershell
 # View backend team's latest commits
-git fetch backend-upstream master
-git log backend-upstream/master --oneline -10
+git fetch backend-upstream main
+git log backend-upstream/main --oneline -10
 ```
 
 **After syncing:**
@@ -172,8 +172,8 @@ git log --oneline -- backend/
 
 | Task | Command |
 |------|---------|
-| Sync backend updates | `git subtree pull --prefix backend backend-upstream master --squash` |
-| Check backend team's commits | `git log backend-upstream/master --oneline -10` |
+| Sync backend updates | `git subtree pull --prefix backend backend-upstream main --squash` |
+| Check backend team's commits | `git log backend-upstream/main --oneline -10` |
 | View your monorepo remotes | `git remote -v` |
 | Push to your monorepo | `git push origin master` |
 
@@ -208,7 +208,7 @@ Backend Team Updates → git subtree pull → Your Monorepo → Cursor AI sees e
 
 **One command to rule them all:**
 ```powershell
-git subtree pull --prefix backend backend-upstream master --squash
+git subtree pull --prefix backend backend-upstream main --squash
 ```
 
 Happy coding! 🚀
