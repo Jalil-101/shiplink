@@ -34,10 +34,35 @@ shiplink-fullstack/
 
 ### When Backend Team Pushes New Code:
 
-**Run this ONE command:**
+**Option 1: Use the sync script (Easiest)**
 
 ```powershell
-git subtree pull --prefix backend backend-upstream main --squash
+.\sync-backend.ps1
+git push origin master
+```
+
+**Option 2: Manual sync (if you prefer)**
+
+**Run these commands:**
+
+```powershell
+# Step 1: Remove old backend files temporarily
+if (Test-Path temp-backend) { Remove-Item -Recurse -Force temp-backend }
+if (Test-Path backend) { Remove-Item -Recurse -Force backend }
+
+# Step 2: Clone latest backend code
+git clone --depth 1 --branch main https://github.com/Anastasiaagyabeng25/Shilink_Backend.git temp-backend
+
+# Step 3: Create backend folder and copy files
+New-Item -ItemType Directory -Force -Path backend
+Copy-Item -Recurse -Force temp-backend/* backend/
+Remove-Item -Recurse -Force temp-backend\.git
+
+# Step 4: Clean up temp folder and add to Git
+Remove-Item -Recurse -Force temp-backend
+git add backend/
+git commit -m "Sync backend updates from backend team"
+git push origin master
 ```
 
 **What this does:**
