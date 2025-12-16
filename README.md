@@ -1,6 +1,6 @@
-# 🚀 ShipLink - Full Stack Logistics Platform
+# 🚀 ShipLink - Mobile App (Frontend)
 
-Complete logistics platform connecting importers with logistics companies and drivers. Built with React Native (Frontend) and Node.js/Express (Backend).
+React Native mobile application for ShipLink logistics platform. Built with Expo and TypeScript.
 
 ---
 
@@ -11,17 +11,16 @@ Complete logistics platform connecting importers with logistics companies and dr
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
 - [Development](#development)
-- [API Documentation](#api-documentation)
+- [Configuration](#configuration)
 - [Deployment](#deployment)
-- [Team Handover Guide](#team-handover-guide)
 
 ---
 
 ## 🎯 Project Overview
 
-ShipLink is a comprehensive delivery/shipping management platform that enables:
+ShipLink mobile app enables:
 
-- **Importers** to find logistics companies and track shipments
+- **Customers** to create delivery requests and track shipments
 - **Drivers** to accept delivery requests and manage deliveries
 - **Real-time tracking** with location updates
 - **Earnings tracking** for drivers
@@ -31,67 +30,40 @@ ShipLink is a comprehensive delivery/shipping management platform that enables:
 
 ## 🛠️ Tech Stack
 
-### Frontend (Mobile App)
-
 - **Framework**: React Native + Expo v54
 - **Language**: TypeScript
 - **Styling**: NativeWind (Tailwind CSS for React Native)
-- **Navigation**: Expo Router (file-based)
+- **Navigation**: Expo Router (file-based routing)
 - **State Management**: React Context API
 - **Forms**: React Hook Form + Yup validation
 - **Storage**: AsyncStorage
 - **Icons**: Lucide React Native
-
-### Backend (API Server)
-
-- **Framework**: Node.js + Express
-- **Language**: TypeScript
-- **Database**: MongoDB with Mongoose
-- **Authentication**: JWT (JSON Web Tokens)
-- **Security**: Bcrypt for password hashing
-- **Port**: 5444
+- **Maps**: React Native Maps
 
 ---
 
 ## 📁 Project Structure
 
 ```
-shiplink-fullstack/
-├── 📂 frontend/              # React Native mobile app
-│   ├── app/                  # Expo Router screens
-│   │   ├── (auth)/          # Authentication screens
-│   │   ├── (user)/          # User/Importer screens
-│   │   ├── (driver)/        # Driver screens
-│   │   └── (onboarding)/    # Onboarding flow
-│   ├── components/           # Reusable UI components
+shiplink-frontend/
+├── frontend/
+│   ├── app/                    # Expo Router screens
+│   │   ├── (auth)/             # Authentication screens
+│   │   ├── (user)/             # Customer screens
+│   │   ├── (driver)/           # Driver screens
+│   │   └── (onboarding)/       # Onboarding flow
+│   ├── components/             # Reusable UI components
 │   ├── src/
-│   │   ├── context/         # React Context providers
-│   │   ├── services/        # API service layer
-│   │   ├── types/           # TypeScript type definitions
-│   │   └── utils/           # Utility functions
-│   ├── package.json
-│   └── README.md            # Frontend documentation
-│
-├── 📂 backend/               # Express API server
-│   ├── src/
-│   │   ├── config/          # Database configuration
-│   │   ├── controllers/     # Route controllers
-│   │   ├── middleware/      # Auth & authorization middleware
-│   │   ├── models/          # MongoDB models
-│   │   ├── routes/          # API routes
-│   │   ├── schemas/         # Input validation schemas
-│   │   ├── types/           # TypeScript types
-│   │   ├── utils/           # Utility functions (hash, jwt, location)
-│   │   └── index.ts         # App entry point
-│   ├── .env.example         # Environment variables template
-│   ├── package.json
-│   └── README.md            # Backend documentation
-│
-├── 📄 package.json           # Root package.json (runs both)
-├── 📄 README.md             # This file
-├── 📄 HANDOVER.md           # Comprehensive handover guide
-├── 📄 INTEGRATION.md        # API integration documentation
-└── 📄 .env.example          # Environment variables template
+│   │   ├── context/            # React Context providers
+│   │   ├── services/           # API service layer
+│   │   ├── types/              # TypeScript type definitions
+│   │   ├── utils/              # Utility functions
+│   │   └── components/         # Shared components
+│   ├── assets/                 # Images, fonts, etc.
+│   ├── constants/              # App constants
+│   └── package.json
+├── package.json                # Root package.json
+└── README.md                   # This file
 ```
 
 ---
@@ -100,95 +72,69 @@ shiplink-fullstack/
 
 ### Prerequisites
 
-Before you begin, ensure you have the following installed:
-
 - **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
-- **MongoDB** (local or cloud) - [Download](https://www.mongodb.com/try/download/community)
 - **npm** or **yarn**
-- **Git**
-- **Code Editor** (VS Code/Cursor recommended)
+- **Expo CLI** (optional, but recommended)
+- **iOS Simulator** (Mac only) or **Android Studio** (for Android emulator)
 
 ### Installation
 
-#### 1. Clone the Repository
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd shiplink-frontend
+   ```
 
-```bash
-git clone <your-repo-url>
-cd shiplink-fullstack
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+   This will install dependencies in the `frontend` directory.
 
-#### 2. Install All Dependencies
+3. **Configure API endpoint**
+   
+   Create a `.env` file in the `frontend` directory:
+   ```bash
+   cd frontend
+   ```
+   
+   Create `.env`:
+   ```env
+   EXPO_PUBLIC_API_BASE_URL=https://your-backend-api.com/api
+   ```
+   
+   For development with local backend:
+   ```env
+   EXPO_PUBLIC_API_BASE_URL=http://localhost:5444/api
+   ```
+   
+   For physical device testing, use your computer's IP:
+   ```env
+   EXPO_PUBLIC_API_BASE_URL=http://192.168.1.100:5444/api
+   ```
 
-```bash
-npm run install:all
-```
+4. **Start the development server**
+   ```bash
+   npm start
+   ```
+   
+   Or from root:
+   ```bash
+   npm run dev
+   ```
 
-This will install dependencies for:
-
-- Root (concurrently for running both servers)
-- Frontend (React Native dependencies)
-- Backend (Express dependencies)
-
-#### 3. Set Up Environment Variables
-
-**Backend:**
-
-```bash
-cd backend
-copy .env.example .env
-```
-
-Edit `backend/.env` with your configuration:
-
-```env
-PORT=5444
-MONGO_URI=mongodb://localhost:27017/shiplink
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-```
-
-**Frontend:**
-The frontend automatically connects to `http://localhost:5444` in development mode.
-
-#### 4. Start MongoDB
-
-Make sure MongoDB is running:
-
-```bash
-# If using local MongoDB
-mongod
-```
-
-#### 5. Run Both Frontend and Backend
-
-```bash
-# From the root directory
-npm run dev
-```
-
-This will start:
-
-- ✅ **Backend API** at `http://localhost:5444`
-- ✅ **Frontend** with Expo DevTools
+5. **Run on device/emulator**
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Scan QR code with Expo Go app on your phone
 
 ---
 
 ## 💻 Development
 
-### Running Services Separately
+### Running the App
 
 ```bash
-# Run frontend only
-npm run dev:frontend
-
-# Run backend only
-npm run dev:backend
-```
-
-### Frontend Development
-
-```bash
-cd frontend
-
 # Start Expo dev server
 npm start
 
@@ -198,187 +144,164 @@ npm run ios        # iOS simulator
 npm run web        # Web browser
 ```
 
-### Backend Development
+### Project Scripts
 
 ```bash
-cd backend
-
-# Development mode (with hot reload)
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
+npm start          # Start Expo dev server
+npm run android    # Run on Android
+npm run ios        # Run on iOS
+npm run web        # Run on web
+npm run lint       # Run ESLint
 ```
 
-### Testing
+### Development Workflow
 
-```bash
-# Frontend tests
-cd frontend
-npm run test
-
-# Backend tests
-cd backend
-npm run test
-```
+1. **Make changes** to files in `frontend/`
+2. **Hot reload** - Changes appear automatically
+3. **Check console** for errors and API logs
+4. **Test on device** - Use Expo Go app for physical device testing
 
 ---
 
-## 📚 API Documentation
+## ⚙️ Configuration
 
-### Base URLs
+### Environment Variables
 
-- **Development**: `http://localhost:5444`
-- **Production**: `https://api.shiplink.com` (configure in deployment)
+Create `frontend/.env`:
 
-### Authentication
+```env
+# API Configuration
+EXPO_PUBLIC_API_BASE_URL=https://api.shiplink.com/api
 
-Most endpoints require JWT authentication. Include the token in the Authorization header:
-
+# Development
+# EXPO_PUBLIC_API_BASE_URL=http://localhost:5444/api
+# EXPO_PUBLIC_API_BASE_URL=http://192.168.1.100:5444/api
 ```
-Authorization: Bearer <your-jwt-token>
-```
 
-### Key Endpoints
+### API Configuration
 
-#### Authentication
-
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-
-#### Users
-
-- `GET /api/users/me` - Get authenticated user profile
-- `GET /api/users/:id` - Get user by ID
-
-#### Drivers
-
-- `GET /api/drivers` - Get all drivers (with filters)
-- `GET /api/drivers/nearby` - Find nearby available drivers
-- `POST /api/drivers` - Create driver profile
-- `PATCH /api/drivers/:id/location` - Update driver location
-- `PATCH /api/drivers/:id/availability` - Toggle driver availability
-
-#### Delivery Requests
-
-- `GET /api/delivery-requests` - Get all delivery requests
-- `GET /api/delivery-requests/pending` - Get pending requests
-- `POST /api/delivery-requests` - Create delivery request (Customer)
-- `POST /api/delivery-requests/:id/accept` - Accept delivery request (Driver)
-- `PATCH /api/delivery-requests/:id/status` - Update delivery status
-
-For complete API documentation, see [INTEGRATION.md](./INTEGRATION.md)
+The app connects to a backend API. Update the API base URL in:
+- `frontend/.env` file (for environment-specific URLs)
+- `frontend/src/services/api.ts` (for default fallback)
 
 ---
 
-## 🌐 Deployment
+## 📱 Features
 
-### Frontend (Mobile App)
+### Customer Features
+- ✅ User registration and authentication
+- ✅ Create delivery requests
+- ✅ View order history
+- ✅ Track deliveries in real-time
+- ✅ Profile management
 
-#### Development Build
+### Driver Features
+- ✅ Driver registration and authentication
+- ✅ View available delivery requests
+- ✅ Accept delivery requests
+- ✅ Manage active deliveries
+- ✅ Track earnings
+- ✅ Update delivery status
 
-```bash
-cd frontend
-npx expo start
-```
+### Shared Features
+- ✅ Onboarding flow
+- ✅ Role-based navigation
+- ✅ Dark mode support
+- ✅ Responsive design
 
-#### Production Build
+---
+
+## 🏗️ Architecture
+
+### State Management
+- **AuthContext**: Handles authentication state
+- **React Context API**: For global state
+- **AsyncStorage**: For persistent storage
+
+### API Service
+- Centralized API service in `src/services/api.ts`
+- Automatic token management
+- Error handling and retry logic
+- Network error detection
+
+### Navigation
+- File-based routing with Expo Router
+- Protected routes based on authentication
+- Role-based navigation (Customer/Driver)
+
+---
+
+## 🚢 Deployment
+
+### Building for Production
 
 ```bash
 cd frontend
 
 # Build for Android
-npx expo build:android
+eas build --platform android
 
 # Build for iOS
-npx expo build:ios
+eas build --platform ios
 ```
 
-### Backend (API Server)
+### Prerequisites for Production Build
 
-#### Using Node.js
+1. **Expo Account**: Sign up at [expo.dev](https://expo.dev)
+2. **EAS CLI**: `npm install -g eas-cli`
+3. **Configure app.json**: Update app name, bundle ID, etc.
 
-```bash
-cd backend
-npm run build
-npm start
-```
+### Environment Setup
 
-#### Using PM2
+1. Set production API URL in `.env`:
+   ```env
+   EXPO_PUBLIC_API_BASE_URL=https://api.shiplink.com/api
+   ```
 
-```bash
-cd backend
-npm install -g pm2
-npm run build
-pm2 start dist/index.js --name shiplink-api
-```
-
-#### Environment Variables (Production)
-
-Make sure to set these in your production environment:
-
-- `PORT` - API server port
-- `MONGO_URI` - MongoDB connection string
-- `JWT_SECRET` - Secret key for JWT tokens
-- `NODE_ENV=production`
+2. Build with EAS:
+   ```bash
+   eas build --platform android --profile production
+   ```
 
 ---
 
-## 👥 Team Handover Guide
+## 🐛 Troubleshooting
 
-### For New Developers
+### Common Issues
 
-1. **Read this README** for project overview
-2. **Read [HANDOVER.md](./HANDOVER.md)** for detailed setup and development workflow
-3. **Read [INTEGRATION.md](./INTEGRATION.md)** for API integration details
-4. **Set up your development environment** following Quick Start
-5. **Run the app** with `npm run dev`
+#### 1. "Cannot connect to API"
+- Check that `EXPO_PUBLIC_API_BASE_URL` is set correctly
+- Verify backend is running and accessible
+- For physical devices, ensure phone and computer are on same WiFi
+- Check firewall settings
 
-### Project Status
+#### 2. "Module not found"
+```bash
+cd frontend
+rm -rf node_modules
+npm install
+```
 
-✅ **Completed:**
+#### 3. "Expo app not loading"
+```bash
+cd frontend
+npx expo start -c  # Clear cache
+```
 
-- Complete onboarding flow
-- Authentication UI and backend
-- User & Driver dashboards
-- Order/delivery tracking UI
-- Profile management
-- Backend API with MongoDB
-- JWT authentication
-- Role-based authorization
-- Driver location tracking
-- Delivery request management
-
-🔨 **In Progress:**
-
-- Frontend-Backend integration (API calls from frontend)
-- Real-time notifications
-- Payment integration
-
-📋 **To Do:**
-
-- Production deployment setup
-- Push notifications
-- Advanced analytics
-- Admin dashboard
-
-### Key Contacts
-
-- **Project Lead**: [Name] - [Email]
-- **Backend Team**: [Contact Info]
-- **Frontend Team**: [Contact Info]
+#### 4. "Network request failed"
+- Verify API URL is correct
+- Check CORS settings on backend
+- Ensure backend is running
 
 ---
 
-## 📖 Additional Documentation
+## 📚 Additional Documentation
 
-- **[HANDOVER.md](./HANDOVER.md)** - Comprehensive handover guide with setup instructions
-- **[INTEGRATION.md](./INTEGRATION.md)** - API integration guide and endpoint documentation
-- **[frontend/README.md](./frontend/README.md)** - Frontend-specific documentation
-- **[backend/README.md](./backend/README.md)** - Backend-specific documentation
+- [Frontend README](./frontend/README.md) - Detailed frontend documentation
+- [Development Guide](./frontend/DEVELOPMENT_GUIDE.md) - Development workflow
+- [Onboarding Guide](./frontend/ONBOARDING_README.md) - Onboarding flow details
+- [Troubleshooting Network](./frontend/TROUBLESHOOTING_NETWORK.md) - Network issues
+- [Connecting Phone](./frontend/CONNECTING_PHONE.md) - Physical device setup
 
 ---
 
@@ -402,10 +325,9 @@ MIT License - See LICENSE file for details
 ## 🆘 Support
 
 For questions or issues:
-
 1. Check the documentation in this repo
-2. Review `HANDOVER.md` for common setup issues
-3. Contact the team leads (see Key Contacts above)
+2. Review troubleshooting guides
+3. Contact the development team
 
 ---
 
