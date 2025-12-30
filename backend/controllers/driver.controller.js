@@ -23,7 +23,7 @@ exports.createDriverProfile = async (req, res, next) => {
       });
     }
 
-    const { licenseNumber, vehicleType, vehicleModel, vehiclePlate } = req.body;
+    const { licenseNumber, vehicleType, vehicleModel, vehiclePlate, idDocument } = req.body;
 
     // Check if user is a driver
     if (req.user.role !== 'driver') {
@@ -57,7 +57,8 @@ exports.createDriverProfile = async (req, res, next) => {
       licenseNumber,
       vehicleType,
       vehicleModel,
-      vehiclePlate
+      vehiclePlate,
+      idDocument: idDocument || null // Optional for now, can make required later
     });
 
     // Populate user data
@@ -77,6 +78,7 @@ exports.createDriverProfile = async (req, res, next) => {
         vehicleType: driver.vehicleType,
         vehicleModel: driver.vehicleModel,
         vehiclePlate: driver.vehiclePlate,
+        idDocument: driver.idDocument ? 'uploaded' : null, // Don't send full base64 for security
         rating: driver.rating,
         totalDeliveries: driver.totalDeliveries,
         isAvailable: driver.isAvailable,
@@ -287,6 +289,7 @@ exports.getMyDriverProfile = async (req, res, next) => {
         vehicleType: driver.vehicleType,
         vehicleModel: driver.vehicleModel,
         vehiclePlate: driver.vehiclePlate,
+        idDocument: driver.idDocument ? 'uploaded' : null, // Don't send full base64 for security
         rating: driver.rating,
         totalDeliveries: driver.totalDeliveries,
         isAvailable: driver.isAvailable,
@@ -498,11 +501,12 @@ exports.updateDriver = async (req, res, next) => {
     }
 
     // Update allowed fields
-    const { vehicleType, vehicleModel, vehiclePlate, licenseNumber } = req.body;
+    const { vehicleType, vehicleModel, vehiclePlate, licenseNumber, idDocument } = req.body;
 
     if (vehicleType) driver.vehicleType = vehicleType;
     if (vehicleModel) driver.vehicleModel = vehicleModel;
     if (vehiclePlate) driver.vehiclePlate = vehiclePlate;
+    if (idDocument !== undefined) driver.idDocument = idDocument || null;
     if (licenseNumber) {
       // Check if license number is already taken by another driver
       const existingDriver = await Driver.findOne({ 
@@ -535,6 +539,7 @@ exports.updateDriver = async (req, res, next) => {
         vehicleType: driver.vehicleType,
         vehicleModel: driver.vehicleModel,
         vehiclePlate: driver.vehiclePlate,
+        idDocument: driver.idDocument ? 'uploaded' : null, // Don't send full base64 for security
         rating: driver.rating,
         totalDeliveries: driver.totalDeliveries,
         isAvailable: driver.isAvailable,

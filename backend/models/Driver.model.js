@@ -34,6 +34,11 @@ const driverSchema = new mongoose.Schema({
     trim: true,
     uppercase: true
   },
+  idDocument: {
+    type: String,
+    default: null,
+    // Store base64 image of national ID or passport
+  },
   rating: {
     type: Number,
     default: 0,

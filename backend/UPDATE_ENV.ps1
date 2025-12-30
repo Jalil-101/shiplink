@@ -22,3 +22,4 @@ Write-Host ""
 Write-Host "⚠️  IMPORTANT: Change JWT_SECRET to a random string before production!" -ForegroundColor Yellow
 Write-Host "   Visit: https://randomkeygen.com/ to generate one" -ForegroundColor Yellow
 
+

@@ -72,3 +72,4 @@ After fixing, you should see in Render logs:
 
 And registration should return `201 Created` instead of `500`.
 
+

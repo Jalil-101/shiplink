@@ -25,3 +25,4 @@ Write-Host "Password @Ridwan2106 has been URL-encoded as %40Ridwan2106" -Foregro
 Write-Host ""
 Write-Host "⚠️  IMPORTANT: Change JWT_SECRET to a random string before production!" -ForegroundColor Yellow
 
+
