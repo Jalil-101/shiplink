@@ -280,7 +280,7 @@ Create `frontend/.env`:
 
 ```env
 # API Configuration
-EXPO_PUBLIC_API_BASE_URL=https://api.shiplink.com/api
+EXPO_PUBLIC_API_BASE_URL=https://shilink-backend.onrender.com/api
 
 # For local development:
 # EXPO_PUBLIC_API_BASE_URL=http://localhost:5444/api
@@ -423,7 +423,7 @@ eas build --platform ios
 
 1. Set production API URL in `.env`:
    ```env
-   EXPO_PUBLIC_API_BASE_URL=https://api.shiplink.com/api
+   EXPO_PUBLIC_API_BASE_URL=https://shilink-backend.onrender.com/api
    ```
 
 2. Build with EAS:
