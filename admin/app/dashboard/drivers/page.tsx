@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import {
@@ -38,7 +38,7 @@ interface Driver {
 
 const columnHelper = createColumnHelper<Driver>();
 
-export default function DriversPage() {
+function DriversPageContent() {
   const searchParams = useSearchParams();
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
@@ -408,6 +408,18 @@ export default function DriversPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function DriversPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    }>
+      <DriversPageContent />
+    </Suspense>
   );
 }
 

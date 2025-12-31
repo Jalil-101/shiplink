@@ -188,13 +188,13 @@ shiplink-fullstack/
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd shiplink-fullstack
-   ```
+```bash
+git clone <your-repo-url>
+cd shiplink-fullstack
+```
 
 2. **Install dependencies**
-   ```bash
+```bash
    cd frontend
    npm install
    ```
@@ -214,14 +214,14 @@ shiplink-fullstack/
    ```
 
 4. **Start the development server**
-   ```bash
+```bash
    npm start
-   ```
-   
+```
+
    Or from the root directory:
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
 5. **Run on device/emulator**
    - Press `i` for iOS simulator
@@ -427,7 +427,7 @@ eas build --platform ios
    ```
 
 2. Build with EAS:
-   ```bash
+```bash
    eas build --platform android --profile production
    ```
 

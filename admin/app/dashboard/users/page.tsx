@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import {
@@ -27,7 +27,7 @@ interface User {
 
 const columnHelper = createColumnHelper<User>();
 
-export default function UsersPage() {
+function UsersPageContent() {
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -293,6 +293,18 @@ export default function UsersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    }>
+      <UsersPageContent />
+    </Suspense>
   );
 }
 
