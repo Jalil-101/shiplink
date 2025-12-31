@@ -6,10 +6,15 @@
 const mongoose = require('mongoose');
 
 const deliveryRequestSchema = new mongoose.Schema({
-  receiverId: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  receiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false // Keep for backward compatibility
   },
   driverId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -78,7 +83,7 @@ const deliveryRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'picked_up', 'in_transit', 'delivered', 'cancelled'],
+    enum: ['pending', 'assigned', 'accepted', 'picked_up', 'in-transit', 'in_transit', 'delivered', 'cancelled'],
     default: 'pending'
   },
   estimatedDeliveryTime: {
@@ -97,7 +102,49 @@ const deliveryRequestSchema = new mongoose.Schema({
   distance: {
     type: Number, // in kilometers
     default: 0
-  }
+  },
+  assignedAt: {
+    type: Date,
+    default: null
+  },
+  disputeResolution: {
+    resolved: {
+      type: Boolean,
+      default: false
+    },
+    resolution: {
+      type: String,
+      default: null
+    },
+    notes: {
+      type: String,
+      default: null
+    },
+    resolvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AdminUser',
+      default: null
+    },
+    resolvedAt: {
+      type: Date,
+      default: null
+    }
+  },
+  adminNotes: [{
+    note: {
+      type: String,
+      required: true
+    },
+    addedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AdminUser',
+      required: true
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 }, {
   timestamps: true
 });
@@ -108,6 +155,7 @@ deliveryRequestSchema.index({ driverId: 1, status: 1 });
 deliveryRequestSchema.index({ status: 1 });
 
 module.exports = mongoose.model('DeliveryRequest', deliveryRequestSchema);
+
 
 
 

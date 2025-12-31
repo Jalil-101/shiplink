@@ -67,6 +67,24 @@ const driverSchema = new mongoose.Schema({
       type: Date,
       default: null
     }
+  },
+  verificationStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected', 'needs-reupload'],
+    default: 'pending'
+  },
+  verificationNotes: {
+    type: String,
+    default: null
+  },
+  verifiedAt: {
+    type: Date,
+    default: null
+  },
+  verifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'AdminUser',
+    default: null
   }
 }, {
   timestamps: true

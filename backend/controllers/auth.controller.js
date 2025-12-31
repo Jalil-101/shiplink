@@ -145,6 +145,20 @@ exports.login = async (req, res, next) => {
       });
     }
 
+    // Check if user is suspended
+    if (user.isSuspended) {
+      return res.status(403).json({
+        error: 'Account Suspended',
+        message: user.suspensionReason || 'Your account has been suspended. Please contact support.',
+        suspended: true,
+        suspendedAt: user.suspendedAt
+      });
+    }
+
+    // Update last activity
+    user.lastActivity = new Date();
+    await user.save();
+
     // Generate token
     const token = generateToken(user._id);
 

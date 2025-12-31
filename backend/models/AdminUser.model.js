@@ -1,17 +1,16 @@
 /**
- * User Model
- * Represents both regular users (customers) and drivers
+ * Admin User Model
+ * Separate from regular users for security and role management
  */
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
+const adminUserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Name is required'],
-    trim: true,
-    minlength: [3, 'Name must be at least 3 characters']
+    trim: true
   },
   email: {
     type: String,
@@ -21,50 +20,36 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
   },
-  phone: {
-    type: String,
-    required: [true, 'Phone number is required'],
-    trim: true,
-    minlength: [8, 'Phone number must be at least 8 digits']
-  },
   password: {
     type: String,
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters'],
-    select: false // Don't return password by default
+    select: false
   },
   role: {
     type: String,
-    enum: ['user', 'driver'],
-    required: [true, 'Role is required'],
-    default: 'user'
+    enum: ['super-admin', 'admin', 'moderator', 'support'],
+    default: 'admin',
+    required: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastLogin: {
+    type: Date,
+    default: null
   },
   avatar: {
     type: String,
     default: null
-  },
-  isSuspended: {
-    type: Boolean,
-    default: false
-  },
-  suspensionReason: {
-    type: String,
-    default: null
-  },
-  suspendedAt: {
-    type: Date,
-    default: null
-  },
-  lastActivity: {
-    type: Date,
-    default: Date.now
   }
 }, {
-  timestamps: true // Adds createdAt and updatedAt
+  timestamps: true
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+adminUserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
   const salt = await bcrypt.genSalt(10);
@@ -73,21 +58,16 @@ userSchema.pre('save', async function(next) {
 });
 
 // Method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword) {
+adminUserSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Remove password from JSON output
-userSchema.methods.toJSON = function() {
+adminUserSchema.methods.toJSON = function() {
   const obj = this.toObject();
   delete obj.password;
   return obj;
 };
 
-module.exports = mongoose.model('User', userSchema);
-
-
-
-
-
+module.exports = mongoose.model('AdminUser', adminUserSchema);
 

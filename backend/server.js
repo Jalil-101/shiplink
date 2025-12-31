@@ -9,19 +9,37 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const http = require('http');
+const { initializeSocket } = require('./socket');
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const driverRoutes = require('./routes/driver.routes');
 const deliveryRequestRoutes = require('./routes/deliveryRequest.routes');
+const adminRoutes = require('./routes/admin.routes');
+const contentRoutes = require('./routes/content.routes');
+const productRoutes = require('./routes/product.routes');
+const cartRoutes = require('./routes/cart.routes');
+const orderRoutes = require('./routes/order.routes');
+const settingsRoutes = require('./routes/settings.routes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5444;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/shiplink';
+
+// Initialize Socket.io
+const io = initializeSocket(server);
+
+// Make io available to routes via req.io
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 // Check required environment variables on startup
 if (!process.env.JWT_SECRET) {
@@ -56,6 +74,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/delivery-requests', deliveryRequestRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/content', contentRoutes); // Public content endpoint
+app.use('/api/products', productRoutes); // Public products
+app.use('/api/cart', cartRoutes); // Cart (protected)
+app.use('/api/orders', orderRoutes); // Orders (protected)
+app.use('/api/settings', settingsRoutes); // Public settings
 
 // 404 handler
 app.use((req, res) => {
@@ -70,14 +94,25 @@ app.use(errorHandler);
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('✅ Connected to MongoDB');
     console.log(`📊 Database: ${MONGODB_URI.split('/').pop().split('?')[0]}`);
+    
+    // Initialize default settings
+    try {
+      const Settings = require('./models/Settings.model');
+      await Settings.initializeDefaults();
+      console.log('✅ Default settings initialized');
+    } catch (error) {
+      console.error('⚠️  Warning: Failed to initialize default settings:', error.message);
+    }
+
     // Start server
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📡 API available at http://localhost:${PORT}/api`);
       console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔌 Socket.io ready for real-time updates`);
       console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Set ✅' : 'Missing ❌'}`);
     });
   })
