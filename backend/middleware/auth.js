@@ -39,6 +39,19 @@ const protect = async (req, res, next) => {
         });
       }
 
+      // Ensure activeRole is set and valid
+      if (!req.user.activeRole) {
+        req.user.activeRole = req.user.role || 'user';
+        req.user.role = req.user.activeRole; // Sync legacy field
+        await req.user.save();
+      }
+
+      // Sync legacy role field with activeRole
+      if (req.user.activeRole !== req.user.role) {
+        req.user.role = req.user.activeRole;
+        // Don't save here to avoid unnecessary DB calls - will sync on next save
+      }
+
       next();
     } catch (error) {
       return res.status(401).json({
@@ -50,6 +63,56 @@ const protect = async (req, res, next) => {
     res.status(500).json({
       error: 'Server Error',
       message: 'Error authenticating user'
+    });
+  }
+};
+
+/**
+ * Validate active role on every request
+ * Ensures user's activeRole is valid and they have permission to use it
+ */
+const validateActiveRole = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Please login to access this resource'
+      });
+    }
+
+    const activeRole = req.user.activeRole || req.user.role || 'user';
+    
+    // Check if user has this role
+    const hasRole = req.user.roles?.some(r => r.role === activeRole) || activeRole === 'user';
+    
+    if (!hasRole) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: `You don't have the ${activeRole} role. Please switch to an available role.`
+      });
+    }
+
+    // Check if role is verified (required for non-user roles)
+    if (activeRole !== 'user') {
+      const roleEntry = req.user.roles?.find(r => r.role === activeRole);
+      if (roleEntry && !roleEntry.verified) {
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: `Your ${activeRole} role is pending verification. Please wait for admin approval.`
+        });
+      }
+    }
+
+    // Ensure activeRole is set on request
+    req.user.activeRole = activeRole;
+    req.user.role = activeRole; // Sync legacy field
+
+    next();
+  } catch (error) {
+    console.error('Error validating active role:', error);
+    res.status(500).json({
+      error: 'Server Error',
+      message: 'Error validating active role'
     });
   }
 };
@@ -67,10 +130,12 @@ const restrictTo = (...roles) => {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    const activeRole = req.user.activeRole || req.user.role;
+    
+    if (!roles.includes(activeRole)) {
       return res.status(403).json({
         error: 'Forbidden',
-        message: `You don't have permission to perform this action. Required role: ${roles.join(' or ')}`
+        message: `You don't have permission to perform this action. Required role: ${roles.join(' or ')}. Your active role: ${activeRole}`
       });
     }
 
@@ -78,7 +143,7 @@ const restrictTo = (...roles) => {
   };
 };
 
-module.exports = { protect, restrictTo };
+module.exports = { protect, restrictTo, validateActiveRole };
 
 
 

@@ -1,5 +1,13 @@
 /**
  * Delivery Request Routes
+ * 
+ * @deprecated This route is deprecated. Please use the unified Order API (/api/orders) instead.
+ * This route is kept for backward compatibility only and will be removed in a future version.
+ * 
+ * Migration guide:
+ * - Use POST /api/orders with order_type: "delivery" instead of POST /api/delivery-requests
+ * - Use GET /api/orders?order_type=delivery instead of GET /api/delivery-requests
+ * - Use PATCH /api/orders/:id/status instead of PATCH /api/delivery-requests/:id/status
  */
 
 const express = require('express');

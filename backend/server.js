@@ -10,6 +10,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const http = require('http');
+const path = require('path');
 const { initializeSocket } = require('./socket');
 
 // Import routes
@@ -23,6 +24,12 @@ const productRoutes = require('./routes/product.routes');
 const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
 const settingsRoutes = require('./routes/settings.routes');
+const logisticsCompanyRoutes = require('./routes/logisticsCompany.routes');
+const sourcingAgentRoutes = require('./routes/sourcingAgent.routes');
+const importCoachRoutes = require('./routes/importCoach.routes');
+const sellerRoutes = require('./routes/seller.routes');
+const roleRoutes = require('./routes/role.routes');
+const uploadRoutes = require('./routes/upload.routes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -80,6 +87,15 @@ app.use('/api/products', productRoutes); // Public products
 app.use('/api/cart', cartRoutes); // Cart (protected)
 app.use('/api/orders', orderRoutes); // Orders (protected)
 app.use('/api/settings', settingsRoutes); // Public settings
+app.use('/api/logistics-companies', logisticsCompanyRoutes); // Logistics companies
+app.use('/api/sourcing-agents', sourcingAgentRoutes); // Sourcing agents
+app.use('/api/import-coaches', importCoachRoutes); // Import coaches
+app.use('/api/sellers', sellerRoutes); // Sellers
+app.use('/api/roles', roleRoutes); // Role switching and management
+app.use('/api/upload', uploadRoutes); // File uploads
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 404 handler
 app.use((req, res) => {

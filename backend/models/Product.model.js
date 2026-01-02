@@ -1,6 +1,6 @@
 /**
  * Product Model
- * Marketplace products managed by admins
+ * Marketplace products managed by sellers or admins
  */
 
 const mongoose = require('mongoose');
@@ -70,14 +70,29 @@ const productSchema = new mongoose.Schema({
     width: { type: Number, default: 10 },
     height: { type: Number, default: 10 }
   },
+  sellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Seller',
+    default: null // null means created by admin
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'AdminUser',
+    refPath: 'createdByType',
+    required: true
+  },
+  createdByType: {
+    type: String,
+    enum: ['AdminUser', 'Seller'],
     required: true
   },
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'AdminUser',
+    refPath: 'updatedByType',
+    default: null
+  },
+  updatedByType: {
+    type: String,
+    enum: ['AdminUser', 'Seller'],
     default: null
   }
 }, {
@@ -106,4 +121,5 @@ productSchema.pre('save', async function(next) {
 });
 
 module.exports = mongoose.model('Product', productSchema);
+
 

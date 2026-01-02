@@ -11,3 +11,6 @@ router.get('/public/:key', settingsController.getPublicSetting);
 
 module.exports = router;
 
+
+
+

@@ -28,7 +28,7 @@ const adminUserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['super-admin', 'admin', 'moderator', 'support'],
+    enum: ['super-admin', 'admin'],
     default: 'admin',
     required: true
   },
@@ -70,4 +70,7 @@ adminUserSchema.methods.toJSON = function() {
 };
 
 module.exports = mongoose.model('AdminUser', adminUserSchema);
+
+
+
 

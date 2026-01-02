@@ -12,17 +12,17 @@ const { createAuditLog } = require('../middleware/adminAuth');
  */
 exports.getAllOrders = async (req, res) => {
   try {
-    const { status, paymentStatus, page = 1, limit = 20 } = req.query;
+    const { status, order_type, page = 1, limit = 20 } = req.query;
     
-    const query = {};
+    const query = { softDelete: false };
     if (status) query.status = status;
-    if (paymentStatus) query.paymentStatus = paymentStatus;
+    if (order_type) query.order_type = order_type;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const orders = await Order.find(query)
       .populate('userId', 'name email phone')
-      .populate('deliveryRequestId', 'status driverId')
+      .populate('provider_id', 'name companyName')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -56,10 +56,10 @@ exports.getAllOrders = async (req, res) => {
  */
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id)
+    const order = await Order.findOne({ _id: req.params.id, softDelete: false })
       .populate('userId', 'name email phone')
-      .populate('items.productId', 'name images')
-      .populate('deliveryRequestId', 'status driverId pickupLocation dropoffLocation');
+      .populate('provider_id', 'name companyName')
+      .populate('items.productId', 'name images');
 
     if (!order) {
       return res.status(404).json({
@@ -99,7 +99,8 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
-    const validStatuses = ['pending', 'confirmed', 'processing', 'ready', 'out-for-delivery', 'delivered', 'cancelled'];
+    // Use unified order status enum
+    const validStatuses = ['created', 'provider_assigned', 'in_progress', 'completed', 'cancelled', 'failed'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         error: 'Validation Error',
@@ -107,7 +108,7 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
-    const order = await Order.findById(id);
+    const order = await Order.findOne({ _id: id, softDelete: false });
     if (!order) {
       return res.status(404).json({
         error: 'Not Found',
@@ -150,4 +151,7 @@ exports.updateOrderStatus = async (req, res) => {
     });
   }
 };
+
+
+
 

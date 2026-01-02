@@ -85,6 +85,12 @@ const driverSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AdminUser',
     default: null
+  },
+  logisticsCompanyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'LogisticsCompany',
+    default: null,
+    index: true
   }
 }, {
   timestamps: true

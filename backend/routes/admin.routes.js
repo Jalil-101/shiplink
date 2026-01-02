@@ -55,7 +55,8 @@ router.delete('/content/:id', protect, restrictTo('super-admin', 'admin'), admin
 const adminAnalyticsController = require('../controllers/adminAnalytics.controller');
 router.get('/analytics/overview', protect, adminAnalyticsController.getOverview);
 router.get('/analytics/users', protect, adminAnalyticsController.getUserAnalytics);
-router.get('/analytics/deliveries', protect, adminAnalyticsController.getDeliveryAnalytics);
+router.get('/analytics/orders', protect, adminAnalyticsController.getOrderAnalytics);
+router.get('/analytics/deliveries', protect, adminAnalyticsController.getDeliveryAnalytics); // Backward compatibility
 
 // ==================== Financial Management ====================
 const adminFinancialController = require('../controllers/adminFinancial.controller');
@@ -109,6 +110,53 @@ const adminSettingsController = require('../controllers/adminSettings.controller
 router.get('/settings', protect, adminSettingsController.getAllSettings);
 router.get('/settings/:key', protect, adminSettingsController.getSettingByKey);
 router.patch('/settings/:key', protect, restrictTo('super-admin', 'admin'), adminSettingsController.updateSetting);
+
+// ==================== Admin Management (Super-Admin only) ====================
+const adminManagementController = require('../controllers/adminManagement.controller');
+router.get('/admins', protect, restrictTo('super-admin'), adminManagementController.getAllAdmins);
+router.post('/admins', protect, restrictTo('super-admin'), adminManagementController.createAdmin);
+router.patch('/admins/:id/suspend', protect, restrictTo('super-admin'), adminManagementController.suspendAdmin);
+router.patch('/admins/:id/role', protect, restrictTo('super-admin'), adminManagementController.updateAdminRole);
+
+// ==================== Role Application Review ====================
+const adminRoleApplicationsController = require('../controllers/adminRoleApplications.controller');
+router.get('/role-applications', protect, adminRoleApplicationsController.getAllApplications);
+router.get('/role-applications/:userId/:role', protect, adminRoleApplicationsController.getApplicationById);
+router.patch('/role-applications/:userId/:role/approve', protect, restrictTo('super-admin', 'admin'), adminRoleApplicationsController.approveApplication);
+router.patch('/role-applications/:userId/:role/reject', protect, restrictTo('super-admin', 'admin'), adminRoleApplicationsController.rejectApplication);
+
+// ==================== Logistics Company Management ====================
+const adminLogisticsController = require('../controllers/adminLogistics.controller');
+router.post('/logistics-companies/enroll', protect, restrictTo('super-admin'), adminLogisticsController.enrollCompany);
+router.get('/logistics-companies', protect, adminLogisticsController.getAllCompanies);
+router.get('/logistics-companies/:id', protect, adminLogisticsController.getCompanyById);
+router.patch('/logistics-companies/:id/approve', protect, restrictTo('super-admin', 'admin'), adminLogisticsController.approveCompany);
+router.patch('/logistics-companies/:id/reject', protect, restrictTo('super-admin', 'admin'), adminLogisticsController.rejectCompany);
+router.patch('/logistics-companies/:id/suspend', protect, restrictTo('super-admin', 'admin'), adminLogisticsController.suspendCompany);
+
+// ==================== Sourcing Agent Management ====================
+const adminSourcingController = require('../controllers/adminSourcing.controller');
+router.get('/sourcing-agents', protect, adminSourcingController.getAllAgents);
+router.get('/sourcing-agents/:id', protect, adminSourcingController.getAgentById);
+router.patch('/sourcing-agents/:id/approve', protect, restrictTo('super-admin', 'admin', 'moderator'), adminSourcingController.approveAgent);
+router.patch('/sourcing-agents/:id/reject', protect, restrictTo('super-admin', 'admin', 'moderator'), adminSourcingController.rejectAgent);
+router.patch('/sourcing-agents/:id/suspend', protect, restrictTo('super-admin', 'admin'), adminSourcingController.suspendAgent);
+
+// ==================== Import Coach Management ====================
+const adminImportCoachController = require('../controllers/adminImportCoach.controller');
+router.get('/import-coaches', protect, adminImportCoachController.getAllCoaches);
+router.get('/import-coaches/:id', protect, adminImportCoachController.getCoachById);
+router.patch('/import-coaches/:id/approve', protect, restrictTo('super-admin', 'admin', 'moderator'), adminImportCoachController.approveCoach);
+router.patch('/import-coaches/:id/reject', protect, restrictTo('super-admin', 'admin', 'moderator'), adminImportCoachController.rejectCoach);
+router.patch('/import-coaches/:id/suspend', protect, restrictTo('super-admin', 'admin'), adminImportCoachController.suspendCoach);
+
+// ==================== Seller Management ====================
+const adminSellerController = require('../controllers/adminSeller.controller');
+router.get('/sellers', protect, adminSellerController.getAllSellers);
+router.get('/sellers/:id', protect, adminSellerController.getSellerById);
+router.patch('/sellers/:id/approve', protect, restrictTo('super-admin', 'admin', 'moderator'), adminSellerController.approveSeller);
+router.patch('/sellers/:id/reject', protect, restrictTo('super-admin', 'admin', 'moderator'), adminSellerController.rejectSeller);
+router.patch('/sellers/:id/suspend', protect, restrictTo('super-admin', 'admin'), adminSellerController.suspendSeller);
 
 module.exports = router;
 

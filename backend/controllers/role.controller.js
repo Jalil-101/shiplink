@@ -1,0 +1,288 @@
+/**
+ * Role Controller
+ * Handles role switching, role requests, and role management
+ */
+
+const User = require('../models/User.model');
+const Driver = require('../models/Driver.model');
+const Seller = require('../models/Seller.model');
+const SourcingAgent = require('../models/SourcingAgent.model');
+const ImportCoach = require('../models/ImportCoach.model');
+const { logRoleSwitched, logRoleRequested } = require('../utils/eventLogger');
+
+/**
+ * Get user's available roles
+ */
+exports.getAvailableRoles = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found',
+        message: 'User does not exist'
+      });
+    }
+
+    // Get roles with verification status
+    const roles = user.roles || [];
+    const availableRoles = roles.map(roleEntry => ({
+      role: roleEntry.role,
+      verified: roleEntry.verified,
+      verifiedAt: roleEntry.verifiedAt,
+      canActivate: roleEntry.verified // Can only activate verified roles
+    }));
+
+    // Always include 'user' role (buyer - default, always verified)
+    if (!availableRoles.find(r => r.role === 'user')) {
+      availableRoles.unshift({
+        role: 'user',
+        verified: true,
+        verifiedAt: user.createdAt,
+        canActivate: true
+      });
+    }
+
+    res.json({
+      success: true,
+      availableRoles,
+      activeRole: user.activeRole
+    });
+  } catch (error) {
+    console.error('Error getting available roles:', error);
+    res.status(500).json({
+      error: 'Server Error',
+      message: 'Failed to get available roles'
+    });
+  }
+};
+
+/**
+ * Switch active role
+ */
+exports.switchActiveRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    const userId = req.user.id;
+
+    if (!role) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Role is required'
+      });
+    }
+
+    const validRoles = ['user', 'seller', 'driver', 'import-coach', 'sourcing-agent'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found',
+        message: 'User does not exist'
+      });
+    }
+
+    // Check if user has this role
+    const roleEntry = user.roles?.find(r => r.role === role);
+    const hasRole = roleEntry || role === 'user'; // 'user' is always available
+
+    if (!hasRole) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: `You don't have the ${role} role. Please request it first.`
+      });
+    }
+
+    // Check if role is verified (required for non-user roles)
+    if (role !== 'user' && roleEntry && !roleEntry.verified) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: `Your ${role} role is pending verification. Please wait for admin approval.`
+      });
+    }
+
+    // Check if already in this role
+    if (user.activeRole === role) {
+      return res.json({
+        success: true,
+        message: `Already active as ${role}`,
+        user: {
+          ...user.toObject(),
+          activeRole: role,
+          role: role // Sync legacy field
+        }
+      });
+    }
+
+    const oldRole = user.activeRole;
+
+    // Switch role
+    user.activeRole = role;
+    user.role = role; // Sync legacy field for backward compatibility
+    await user.save();
+
+    // Log role switch
+    await logRoleSwitched(userId, oldRole, role);
+
+    res.json({
+      success: true,
+      message: `Successfully switched to ${role} role`,
+      user: {
+        ...user.toObject(),
+        activeRole: role,
+        role: role
+      }
+    });
+  } catch (error) {
+    console.error('Error switching role:', error);
+    res.status(500).json({
+      error: 'Server Error',
+      message: 'Failed to switch role'
+    });
+  }
+};
+
+/**
+ * Request a new role
+ */
+exports.requestRole = async (req, res) => {
+  try {
+    const { role, data } = req.body;
+    const userId = req.user.id;
+
+    if (!role) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Role is required'
+      });
+    }
+
+    const validRoles = ['seller', 'driver', 'import-coach', 'sourcing-agent'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found',
+        message: 'User does not exist'
+      });
+    }
+
+    // Check if user already has this role
+    const existingRole = user.roles?.find(r => r.role === role);
+    if (existingRole) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: `You already have the ${role} role. Status: ${existingRole.verified ? 'verified' : 'pending verification'}`
+      });
+    }
+
+    // Add role to user's roles array (pending verification)
+    if (!user.roles) {
+      user.roles = [];
+    }
+
+    user.roles.push({
+      role: role,
+      verified: false,
+      requestedAt: new Date()
+    });
+
+    await user.save();
+
+    // Create role-specific profile based on role type
+    let profile = null;
+    try {
+      switch (role) {
+        case 'driver':
+          // Check if driver profile already exists
+          const existingDriver = await Driver.findOne({ userId });
+          if (!existingDriver) {
+            profile = new Driver({
+              userId,
+              licenseNumber: data?.licenseNumber || '',
+              vehicleType: data?.vehicleType || 'car',
+              vehicleModel: data?.vehicleModel || '',
+              vehiclePlate: data?.vehiclePlate || '',
+              verificationStatus: 'pending'
+            });
+            await profile.save();
+          }
+          break;
+        
+        case 'seller':
+          const existingSeller = await Seller.findOne({ userId });
+          if (!existingSeller) {
+            profile = new Seller({
+              userId,
+              businessName: data?.businessName || user.name,
+              businessType: data?.businessType || 'individual',
+              verificationStatus: 'pending'
+            });
+            await profile.save();
+          }
+          break;
+        
+        case 'sourcing-agent':
+          const existingAgent = await SourcingAgent.findOne({ userId });
+          if (!existingAgent) {
+            profile = new SourcingAgent({
+              userId,
+              agentName: data?.agentName || user.name,
+              verificationStatus: 'pending'
+            });
+            await profile.save();
+          }
+          break;
+        
+        case 'import-coach':
+          const existingCoach = await ImportCoach.findOne({ userId });
+          if (!existingCoach) {
+            profile = new ImportCoach({
+              userId,
+              coachName: data?.coachName || user.name,
+              verificationStatus: 'pending'
+            });
+            await profile.save();
+          }
+          break;
+      }
+    } catch (profileError) {
+      console.error(`Error creating ${role} profile:`, profileError);
+      // Don't fail the request - profile can be created later
+    }
+
+    // Log role request
+    await logRoleRequested(userId, role);
+
+    res.json({
+      success: true,
+      message: `Role request submitted. Your ${role} role is pending admin verification.`,
+      role: {
+        role: role,
+        verified: false,
+        requestedAt: new Date()
+      }
+    });
+  } catch (error) {
+    console.error('Error requesting role:', error);
+    res.status(500).json({
+      error: 'Server Error',
+      message: 'Failed to request role'
+    });
+  }
+};
+
+
+

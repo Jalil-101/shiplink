@@ -1,0 +1,384 @@
+'use client';
+
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import api from '@/lib/api';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  createColumnHelper,
+  flexRender,
+} from '@tanstack/react-table';
+import { Search, CheckCircle, XCircle, Ban, Eye } from 'lucide-react';
+
+interface Seller {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
+  businessName: string;
+  businessType: string;
+  verificationStatus: 'pending' | 'approved' | 'rejected' | 'suspended';
+  rating: number;
+  totalProducts: number;
+  totalSales: number;
+  createdAt: string;
+}
+
+const columnHelper = createColumnHelper<Seller>();
+
+function SellersPageContent() {
+  const searchParams = useSearchParams();
+  const [sellers, setSellers] = useState<Seller[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
+  const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | 'suspend' | null>(null);
+  const [notes, setNotes] = useState('');
+
+  const columns = [
+    columnHelper.accessor('businessName', {
+      header: 'Business Name',
+      cell: (info) => info.getValue(),
+    }),
+    columnHelper.accessor('userId.email', {
+      header: 'Email',
+      cell: (info) => info.getValue() || 'N/A',
+    }),
+    columnHelper.accessor('businessType', {
+      header: 'Type',
+      cell: (info) => (
+        <span className="capitalize">{info.getValue()}</span>
+      ),
+    }),
+    columnHelper.accessor('verificationStatus', {
+      header: 'Status',
+      cell: (info) => {
+        const status = info.getValue();
+        const statusConfig = {
+          pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
+          approved: { bg: 'bg-green-100', text: 'text-green-800', label: 'Approved' },
+          rejected: { bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected' },
+          suspended: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Suspended' },
+        };
+        const config = statusConfig[status] || statusConfig.pending;
+        return (
+          <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.bg} ${config.text}`}>
+            {config.label}
+          </span>
+        );
+      },
+    }),
+    columnHelper.accessor('totalProducts', {
+      header: 'Products',
+      cell: (info) => info.getValue() || 0,
+    }),
+    columnHelper.accessor('totalSales', {
+      header: 'Sales',
+      cell: (info) => `$${info.getValue()?.toFixed(2) || '0.00'}`,
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: 'Actions',
+      cell: (info) => {
+        const seller = info.row.original;
+        return (
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => window.location.href = `/dashboard/sellers/${seller._id}`}
+              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+              title="View Details"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+            {seller.verificationStatus === 'pending' && (
+              <>
+                <button
+                  onClick={() => handleAction(seller, 'approve')}
+                  className="p-1 text-green-600 hover:bg-green-50 rounded"
+                  title="Approve"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleAction(seller, 'reject')}
+                  className="p-1 text-red-600 hover:bg-red-50 rounded"
+                  title="Reject"
+                >
+                  <XCircle className="h-4 w-4" />
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => handleAction(seller, 'suspend')}
+              className="p-1 text-red-600 hover:bg-red-50 rounded"
+              title="Suspend"
+            >
+              <Ban className="h-4 w-4" />
+            </button>
+          </div>
+        );
+      },
+    }),
+  ];
+
+  const table = useReactTable({
+    data: sellers,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    manualPagination: true,
+    pageCount: pagination.pages,
+  });
+
+  useEffect(() => {
+    fetchSellers();
+  }, [pagination.page, statusFilter, search]);
+
+  const fetchSellers = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: pagination.page.toString(),
+        limit: '20',
+      });
+      if (statusFilter) params.append('verificationStatus', statusFilter);
+      if (search) params.append('search', search);
+
+      const response = await api.get(`/sellers?${params}`);
+      setSellers(response.data.sellers);
+      setPagination(response.data.pagination);
+    } catch (error) {
+      console.error('Error fetching sellers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAction = (seller: Seller, action: 'approve' | 'reject' | 'suspend') => {
+    setSelectedSeller(seller);
+    setActionType(action);
+    setShowModal(true);
+    setNotes('');
+  };
+
+  const handleSubmitAction = async () => {
+    if (!selectedSeller || !actionType) return;
+
+    if ((actionType === 'reject' || actionType === 'suspend') && !notes.trim()) {
+      alert('Notes are required for this action');
+      return;
+    }
+
+    try {
+      let endpoint = '';
+      let payload: any = {};
+
+      switch (actionType) {
+        case 'approve':
+          endpoint = `/sellers/${selectedSeller._id}/approve`;
+          if (notes) payload.notes = notes;
+          break;
+        case 'reject':
+          endpoint = `/sellers/${selectedSeller._id}/reject`;
+          payload.notes = notes;
+          break;
+        case 'suspend':
+          endpoint = `/sellers/${selectedSeller._id}/suspend`;
+          payload.reason = notes;
+          break;
+      }
+
+      await api.patch(endpoint, payload);
+      setShowModal(false);
+      setSelectedSeller(null);
+      setActionType(null);
+      setNotes('');
+      fetchSellers();
+      alert('Action completed successfully');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Error performing action');
+    }
+  };
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Seller Management</h1>
+        <p className="mt-1 text-sm text-gray-500">Manage and verify seller accounts</p>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search sellers..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="suspended">Suspended</option>
+          </select>
+          <button
+            onClick={() => {
+              setStatusFilter('');
+              setSearch('');
+            }}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          key={header.id}
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {table.getRowModel().rows.map((row) => (
+                    <tr key={row.id} className="hover:bg-gray-50">
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200">
+              <div className="text-sm text-gray-700">
+                Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+                {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} sellers
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                  disabled={pagination.page === 1}
+                  className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                  disabled={pagination.page >= pagination.pages}
+                  className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {showModal && selectedSeller && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              {actionType === 'approve' && 'Approve Seller'}
+              {actionType === 'reject' && 'Reject Seller'}
+              {actionType === 'suspend' && 'Suspend Seller'}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Seller: {selectedSeller.businessName}
+            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {actionType === 'approve' ? 'Notes (optional)' : 'Notes (required)'}
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder={actionType === 'approve' ? 'Optional notes...' : 'Enter notes...'}
+                required={actionType !== 'approve'}
+              />
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleSubmitAction}
+                className={`flex-1 px-4 py-2 rounded-md text-white font-medium ${
+                  actionType === 'approve'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                Confirm
+              </button>
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setSelectedSeller(null);
+                  setActionType(null);
+                  setNotes('');
+                }}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md font-medium hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function SellersPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    }>
+      <SellersPageContent />
+    </Suspense>
+  );
+}
+
+
+

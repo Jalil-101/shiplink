@@ -5,7 +5,7 @@
 
 const User = require('../models/User.model');
 const Driver = require('../models/Driver.model');
-const DeliveryRequest = require('../models/DeliveryRequest.model');
+const Order = require('../models/Order.model');
 const AuditLog = require('../models/AuditLog.model');
 const { createAuditLog } = require('../middleware/adminAuth');
 
@@ -27,11 +27,11 @@ exports.getOverview = async (req, res) => {
       totalDrivers,
       activeUsers,
       suspendedUsers,
-      totalDeliveries,
-      deliveriesThisMonth,
-      deliveriesThisWeek,
-      completedDeliveries,
-      pendingDeliveries,
+      totalOrders,
+      ordersThisMonth,
+      ordersThisWeek,
+      completedOrders,
+      pendingOrders,
       totalRevenue,
       revenueThisMonth,
       pendingVerifications,
@@ -41,18 +41,18 @@ exports.getOverview = async (req, res) => {
       Driver.countDocuments(),
       User.countDocuments({ isSuspended: false }),
       User.countDocuments({ isSuspended: true }),
-      DeliveryRequest.countDocuments(),
-      DeliveryRequest.countDocuments({ createdAt: { $gte: startOfMonth } }),
-      DeliveryRequest.countDocuments({ createdAt: { $gte: startOfWeek } }),
-      DeliveryRequest.countDocuments({ status: 'delivered' }),
-      DeliveryRequest.countDocuments({ status: 'pending' }),
-      DeliveryRequest.aggregate([
-        { $match: { status: 'delivered' } },
-        { $group: { _id: null, total: { $sum: '$price' } } }
+      Order.countDocuments({ softDelete: false }),
+      Order.countDocuments({ createdAt: { $gte: startOfMonth }, softDelete: false }),
+      Order.countDocuments({ createdAt: { $gte: startOfWeek }, softDelete: false }),
+      Order.countDocuments({ status: 'completed', softDelete: false }),
+      Order.countDocuments({ status: 'created', softDelete: false }),
+      Order.aggregate([
+        { $match: { status: 'completed', softDelete: false } },
+        { $group: { _id: null, total: { $sum: '$gross_amount' } } }
       ]),
-      DeliveryRequest.aggregate([
-        { $match: { status: 'delivered', createdAt: { $gte: startOfMonth } } },
-        { $group: { _id: null, total: { $sum: '$price' } } }
+      Order.aggregate([
+        { $match: { status: 'completed', createdAt: { $gte: startOfMonth }, softDelete: false } },
+        { $group: { _id: null, total: { $sum: '$gross_amount' } } }
       ]),
       Driver.countDocuments({ verificationStatus: 'pending' }),
       Driver.countDocuments({ verificationStatus: 'approved' }),
@@ -72,12 +72,12 @@ exports.getOverview = async (req, res) => {
           approved: approvedDrivers,
           pendingVerification: pendingVerifications,
         },
-        deliveries: {
-          total: totalDeliveries,
-          thisMonth: deliveriesThisMonth,
-          thisWeek: deliveriesThisWeek,
-          completed: completedDeliveries,
-          pending: pendingDeliveries,
+        orders: {
+          total: totalOrders,
+          thisMonth: ordersThisMonth,
+          thisWeek: ordersThisWeek,
+          completed: completedOrders,
+          pending: pendingOrders,
         },
         revenue: {
           total: totalRevenue[0]?.total || 0,
@@ -138,53 +138,76 @@ exports.getUserAnalytics = async (req, res) => {
 };
 
 /**
- * @route   GET /api/admin/analytics/deliveries
- * @desc    Get delivery analytics
+ * @route   GET /api/admin/analytics/orders
+ * @desc    Get order analytics (using unified Order model)
  * @access  Private (Admin)
  */
-exports.getDeliveryAnalytics = async (req, res) => {
+exports.getOrderAnalytics = async (req, res) => {
   try {
-    const { period = '30' } = req.query;
+    const { period = '30', order_type } = req.query;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - parseInt(period));
 
-    // Deliveries over time
-    const deliveriesOverTime = await DeliveryRequest.aggregate([
-      { $match: { createdAt: { $gte: startDate } } },
+    const matchQuery = {
+      createdAt: { $gte: startDate },
+      softDelete: false
+    };
+
+    if (order_type) {
+      matchQuery.order_type = order_type;
+    }
+
+    // Orders over time
+    const ordersOverTime = await Order.aggregate([
+      { $match: matchQuery },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
           count: { $sum: 1 },
-          revenue: { $sum: '$price' },
+          revenue: { $sum: '$gross_amount' },
         },
       },
       { $sort: { _id: 1 } },
     ]);
 
-    // Deliveries by status
-    const deliveriesByStatus = await DeliveryRequest.aggregate([
+    // Orders by status
+    const ordersByStatus = await Order.aggregate([
+      { $match: { softDelete: false } },
       { $group: { _id: '$status', count: { $sum: 1 } } },
     ]);
 
-    // Average delivery value
-    const avgDeliveryValue = await DeliveryRequest.aggregate([
-      { $match: { status: 'delivered' } },
-      { $group: { _id: null, avg: { $avg: '$price' } } },
+    // Orders by type
+    const ordersByType = await Order.aggregate([
+      { $match: { softDelete: false } },
+      { $group: { _id: '$order_type', count: { $sum: 1 }, revenue: { $sum: '$gross_amount' } } },
     ]);
 
-    await createAuditLog(req, 'view_delivery_analytics', 'analytics', null);
+    // Average order value
+    const avgOrderValue = await Order.aggregate([
+      { $match: { status: 'completed', softDelete: false } },
+      { $group: { _id: null, avg: { $avg: '$gross_amount' } } },
+    ]);
+
+    await createAuditLog(req, 'view_order_analytics', 'analytics', null);
 
     res.json({
-      deliveriesOverTime,
-      deliveriesByStatus,
-      averageDeliveryValue: avgDeliveryValue[0]?.avg || 0,
+      ordersOverTime,
+      ordersByStatus,
+      ordersByType,
+      averageOrderValue: avgOrderValue[0]?.avg || 0,
     });
   } catch (error) {
-    console.error('Get delivery analytics error:', error);
+    console.error('Get order analytics error:', error);
     res.status(500).json({
       error: 'Server Error',
-      message: 'Error fetching delivery analytics',
+      message: 'Error fetching order analytics',
     });
   }
 };
+
+// Keep backward compatibility
+exports.getDeliveryAnalytics = exports.getOrderAnalytics;
+
+
+
 
