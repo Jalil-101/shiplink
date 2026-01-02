@@ -88,16 +88,25 @@ const restrictTo = (...roles) => {
 
 /**
  * Create audit log entry
+ * Updated to use new AuditLog schema with event_type, actor_id, and actorModel
  */
 const createAuditLog = async (req, action, resource, resourceId = null, details = {}, status = 'success', errorMessage = null) => {
   try {
     const AuditLog = require('../models/AuditLog.model');
+    
+    // Map action to event_type (default to 'admin_action' for admin operations)
+    const eventType = 'admin_action';
+    
     await AuditLog.create({
-      adminId: req.admin._id,
-      action,
-      resource,
-      resourceId: resourceId?.toString() || null,
-      details,
+      event_type: eventType,
+      actor_id: req.admin._id,
+      actorModel: 'AdminUser',
+      adminId: req.admin._id, // Keep for backward compatibility
+      action, // Keep for backward compatibility
+      resource, // Keep for backward compatibility
+      resourceId: resourceId?.toString() || null, // Keep for backward compatibility
+      details, // Keep for backward compatibility
+      metadata: details, // Use details as metadata
       ipAddress: req.ip || req.connection.remoteAddress,
       userAgent: req.get('user-agent'),
       status,
