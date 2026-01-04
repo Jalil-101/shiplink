@@ -33,6 +33,7 @@ const uploadRoutes = require('./routes/upload.routes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
+const { apiLimiter, authLimiter, uploadLimiter, adminLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 const server = http.createServer(app);
@@ -67,6 +68,9 @@ app.use(morgan('dev')); // Logging
 app.use(express.json({ limit: '10mb' })); // Parse JSON bodies (increased limit for image uploads)
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
 
+// Rate limiting - applied to all API routes
+app.use('/api/', apiLimiter);
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
@@ -77,11 +81,11 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes); // Strict rate limiting for auth
 app.use('/api/users', userRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/delivery-requests', deliveryRequestRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminLimiter, adminRoutes); // Higher rate limit for admin
 app.use('/api/content', contentRoutes); // Public content endpoint
 app.use('/api/products', productRoutes); // Public products
 app.use('/api/cart', cartRoutes); // Cart (protected)
@@ -92,7 +96,7 @@ app.use('/api/sourcing-agents', sourcingAgentRoutes); // Sourcing agents
 app.use('/api/import-coaches', importCoachRoutes); // Import coaches
 app.use('/api/sellers', sellerRoutes); // Sellers
 app.use('/api/roles', roleRoutes); // Role switching and management
-app.use('/api/upload', uploadRoutes); // File uploads
+app.use('/api/upload', uploadLimiter, uploadRoutes); // File uploads with rate limiting
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
