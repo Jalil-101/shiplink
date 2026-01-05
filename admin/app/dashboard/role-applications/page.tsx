@@ -226,45 +226,77 @@ function RoleApplicationsPageContent() {
             </div>
             <div>
               <h4 className="font-semibold text-gray-900 mb-2 text-base">Documents</h4>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
                 {profile.documents?.governmentId && Array.isArray(profile.documents.governmentId) && profile.documents.governmentId.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Government ID:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.governmentId.length} file(s)</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Government ID ({profile.documents.governmentId.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.governmentId.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Government ID ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {profile.documents?.driversLicense && Array.isArray(profile.documents.driversLicense) && profile.documents.driversLicense.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Driver's License:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.driversLicense.length} file(s)</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Driver's License ({profile.documents.driversLicense.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.driversLicense.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Driver's License ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {profile.documents?.vehicleRegistration && Array.isArray(profile.documents.vehicleRegistration) && profile.documents.vehicleRegistration.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Vehicle Registration:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.vehicleRegistration.length} file(s)</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Vehicle Registration ({profile.documents.vehicleRegistration.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.vehicleRegistration.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Vehicle Registration ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {profile.documents?.insuranceDocument && Array.isArray(profile.documents.insuranceDocument) && profile.documents.insuranceDocument.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Insurance:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.insuranceDocument.length} file(s)</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Insurance ({profile.documents.insuranceDocument.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.insuranceDocument.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Insurance ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {profile.documents?.selfie && Array.isArray(profile.documents.selfie) && profile.documents.selfie.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Selfie:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.selfie.length} file(s)</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Selfie ({profile.documents.selfie.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.selfie.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Selfie ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {profile.idDocument && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">ID Document:</span>
-                    <span className="text-sm text-gray-900">1 file</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">ID Document:</span>
+                    <a href={profile.idDocument} target="_blank" rel="noopener noreferrer" className="block">
+                      <img src={profile.idDocument} alt="ID Document" className="w-full h-32 object-cover rounded border border-gray-300" />
+                    </a>
                   </div>
                 )}
                 {(!profile.documents || (Object.keys(profile.documents || {}).length === 0 && !profile.idDocument)) && (
-                  <p className="text-sm text-gray-500 italic">No documents uploaded</p>
+                  <p className="text-sm text-gray-500 italic p-3 bg-white rounded border border-gray-200">No documents uploaded</p>
                 )}
               </div>
             </div>
@@ -296,27 +328,41 @@ function RoleApplicationsPageContent() {
             </div>
             <div>
               <h4 className="font-semibold text-gray-900 mb-2 text-base">Documents</h4>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
                 {profile.documents?.businessRegistration && Array.isArray(profile.documents.businessRegistration) && profile.documents.businessRegistration.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Business Registration:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.businessRegistration.length} file(s)</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Business Registration ({profile.documents.businessRegistration.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.businessRegistration.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Business Registration ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {profile.documents?.proofOfStock && Array.isArray(profile.documents.proofOfStock) && profile.documents.proofOfStock.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Proof of Stock:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.proofOfStock.length} file(s)</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Proof of Stock ({profile.documents.proofOfStock.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.proofOfStock.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Proof of Stock ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {profile.businessLicense && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Business License:</span>
-                    <span className="text-sm text-gray-900">1 file</span>
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Business License:</span>
+                    <a href={profile.businessLicense} target="_blank" rel="noopener noreferrer" className="block">
+                      <img src={profile.businessLicense} alt="Business License" className="w-full h-32 object-cover rounded border border-gray-300" />
+                    </a>
                   </div>
                 )}
                 {(!profile.documents || (Object.keys(profile.documents || {}).length === 0 && !profile.businessLicense)) && (
-                  <p className="text-sm text-gray-500 italic">No documents uploaded</p>
+                  <p className="text-sm text-gray-500 italic p-3 bg-white rounded border border-gray-200">No documents uploaded</p>
                 )}
               </div>
             </div>
@@ -355,21 +401,33 @@ function RoleApplicationsPageContent() {
             </div>
             <div>
               <h4 className="font-semibold text-gray-900 mb-2 text-base">Documents</h4>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
-                {profile.documents?.businessLicense && Array.isArray(profile.documents.businessLicense) && profile.documents.businessLicense.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Business License:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.businessLicense.length} file(s)</span>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                {profile.documents?.idVerification && Array.isArray(profile.documents.idVerification) && profile.documents.idVerification.length > 0 && (
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">ID Verification ({profile.documents.idVerification.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.idVerification.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`ID Verification ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {profile.documents?.certifications && Array.isArray(profile.documents.certifications) && profile.documents.certifications.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Certifications:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.certifications.length} file(s)</span>
+                {profile.documents?.businessRegistration && Array.isArray(profile.documents.businessRegistration) && profile.documents.businessRegistration.length > 0 && (
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Business Registration ({profile.documents.businessRegistration.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.businessRegistration.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Business Registration ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {(!profile.documents || Object.keys(profile.documents || {}).length === 0) && (
-                  <p className="text-sm text-gray-500 italic">No documents uploaded</p>
+                  <p className="text-sm text-gray-500 italic p-3 bg-white rounded border border-gray-200">No documents uploaded</p>
                 )}
               </div>
             </div>
@@ -417,21 +475,33 @@ function RoleApplicationsPageContent() {
             </div>
             <div>
               <h4 className="font-semibold text-gray-900 mb-2 text-base">Documents</h4>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
-                {profile.documents?.certifications && Array.isArray(profile.documents.certifications) && profile.documents.certifications.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Certifications:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.certifications.length} file(s)</span>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                {profile.documents?.portfolio && Array.isArray(profile.documents.portfolio) && profile.documents.portfolio.length > 0 && (
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Portfolio ({profile.documents.portfolio.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.portfolio.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Portfolio ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {profile.documents?.businessLicense && Array.isArray(profile.documents.businessLicense) && profile.documents.businessLicense.length > 0 && (
-                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <span className="text-sm font-semibold text-gray-700">Business License:</span>
-                    <span className="text-sm text-gray-900">{profile.documents.businessLicense.length} file(s)</span>
+                {profile.documents?.certificates && Array.isArray(profile.documents.certificates) && profile.documents.certificates.length > 0 && (
+                  <div className="p-3 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">Certificates ({profile.documents.certificates.length} file(s)):</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.documents.certificates.map((doc: string, idx: number) => (
+                        <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="block">
+                          <img src={doc} alt={`Certificate ${idx + 1}`} className="w-full h-32 object-cover rounded border border-gray-300" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {(!profile.documents || Object.keys(profile.documents || {}).length === 0) && (
-                  <p className="text-sm text-gray-500 italic">No documents uploaded</p>
+                  <p className="text-sm text-gray-500 italic p-3 bg-white rounded border border-gray-200">No documents uploaded</p>
                 )}
               </div>
             </div>

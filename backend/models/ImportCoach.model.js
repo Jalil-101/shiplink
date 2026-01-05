@@ -70,6 +70,19 @@ const importCoachSchema = new mongoose.Schema({
   qualifications: [{
     type: String
   }],
+  references: [{
+    name: String,
+    email: String,
+    phone: String
+  }],
+  documents: {
+    portfolio: [{
+      type: String
+    }],
+    certificates: [{
+      type: String
+    }]
+  },
   certifications: [{
     name: String,
     issuer: String,

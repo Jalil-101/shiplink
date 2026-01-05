@@ -34,10 +34,31 @@ const driverSchema = new mongoose.Schema({
     trim: true,
     uppercase: true
   },
+  licenseExpiry: {
+    type: String,
+    default: null
+  },
   idDocument: {
     type: String,
     default: null,
     // Store base64 image of national ID or passport
+  },
+  documents: {
+    governmentId: [{
+      type: String // Array of document URLs or base64
+    }],
+    driversLicense: [{
+      type: String
+    }],
+    vehicleRegistration: [{
+      type: String
+    }],
+    insuranceDocument: [{
+      type: String
+    }],
+    selfie: [{
+      type: String
+    }]
   },
   rating: {
     type: Number,

@@ -26,9 +26,29 @@ const sellerSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  bankAccountNumber: {
+    type: String,
+    default: null
+  },
+  bankName: {
+    type: String,
+    default: null
+  },
+  accountHolderName: {
+    type: String,
+    default: null
+  },
   businessLicense: {
     type: String, // URL or base64
     default: null
+  },
+  documents: {
+    businessRegistration: [{
+      type: String
+    }],
+    proofOfStock: [{
+      type: String
+    }]
   },
   description: {
     type: String,

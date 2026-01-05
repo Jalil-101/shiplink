@@ -75,6 +75,31 @@ const sourcingAgentSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  bankAccountNumber: {
+    type: String,
+    default: null
+  },
+  bankName: {
+    type: String,
+    default: null
+  },
+  accountHolderName: {
+    type: String,
+    default: null
+  },
+  references: [{
+    name: String,
+    email: String,
+    phone: String
+  }],
+  documents: {
+    idVerification: [{
+      type: String
+    }],
+    businessRegistration: [{
+      type: String
+    }]
+  },
   contactInfo: {
     phone: String,
     email: String,
