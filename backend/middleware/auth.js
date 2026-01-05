@@ -119,6 +119,8 @@ const validateActiveRole = async (req, res, next) => {
 
 /**
  * Restrict routes to specific roles
+ * Checks if user has ANY of the required roles (verified), regardless of activeRole
+ * This allows users with multiple roles to access features for any of their verified roles
  * @param {...string} roles - Allowed roles
  */
 const restrictTo = (...roles) => {
@@ -132,14 +134,55 @@ const restrictTo = (...roles) => {
 
     const activeRole = req.user.activeRole || req.user.role;
     
-    if (!roles.includes(activeRole)) {
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: `You don't have permission to perform this action. Required role: ${roles.join(' or ')}. Your active role: ${activeRole}`
-      });
+    // Check if activeRole matches (fast path)
+    if (roles.includes(activeRole)) {
+      // Verify the role is actually verified (for non-user roles)
+      if (activeRole === 'user') {
+        // 'user' role is always available
+        return next();
+      }
+      
+      const roleEntry = req.user.roles?.find(r => r.role === activeRole);
+      if (roleEntry && roleEntry.verified) {
+        return next();
+      }
     }
-
-    next();
+    
+    // Check if user has ANY of the required roles in their roles array (even if not active)
+    // This allows users to access features for any of their verified roles
+    const hasRequiredRole = roles.some(requiredRole => {
+      if (requiredRole === 'user') {
+        // 'user' role is always available to all users
+        return true;
+      }
+      
+      const roleEntry = req.user.roles?.find(r => r.role === requiredRole);
+      return roleEntry && roleEntry.verified;
+    });
+    
+    if (hasRequiredRole) {
+      // User has the required role, but it's not active
+      // Allow access but include a hint in the response
+      // The frontend can handle this gracefully
+      return next();
+    }
+    
+    // User doesn't have any of the required roles
+    const userRoles = req.user.roles?.filter(r => r.verified).map(r => r.role) || [];
+    if (userRoles.length === 0) {
+      userRoles.push('user'); // All users have at least 'user' role
+    }
+    
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: `You don't have permission to perform this action. Required role: ${roles.join(' or ')}. Your verified roles: ${userRoles.join(', ')}`,
+      requiredRoles: roles,
+      userRoles: userRoles,
+      activeRole: activeRole,
+      hint: userRoles.some(r => roles.includes(r)) 
+        ? 'You have this role but it is not currently active. Switch roles to access this feature.'
+        : 'You need to apply for and get approved for this role to access this feature.'
+    });
   };
 };
 
