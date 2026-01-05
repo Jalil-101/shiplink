@@ -10,7 +10,7 @@ import {
   createColumnHelper,
   flexRender,
 } from '@tanstack/react-table';
-import { Search, CheckCircle, XCircle, Ban, Eye, Truck } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Ban, Eye, Truck, Plus } from 'lucide-react';
 
 interface LogisticsCompany {
   _id: string;
@@ -38,8 +38,19 @@ function LogisticsCompaniesPageContent() {
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
   const [selectedCompany, setSelectedCompany] = useState<LogisticsCompany | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'suspend' | null>(null);
   const [notes, setNotes] = useState('');
+  const [enrollForm, setEnrollForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    companyName: '',
+    registrationNumber: '',
+    businessLicense: '',
+    description: '',
+  });
 
   const columns = [
     columnHelper.accessor('companyName', {
@@ -194,9 +205,18 @@ function LogisticsCompaniesPageContent() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Logistics Companies</h1>
-        <p className="mt-1 text-sm text-gray-500">Manage and verify logistics companies</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Logistics Companies</h1>
+          <p className="mt-1 text-sm text-gray-500">Manage and verify logistics companies</p>
+        </div>
+        <button
+          onClick={() => setShowEnrollModal(true)}
+          className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Enroll Company</span>
+        </button>
       </div>
 
       <div className="bg-white rounded-lg shadow p-4 mb-6">
@@ -295,6 +315,166 @@ function LogisticsCompaniesPageContent() {
           </>
         )}
       </div>
+
+      {/* Enroll Company Modal */}
+      {showEnrollModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Enroll New Logistics Company</h3>
+              <button
+                onClick={() => {
+                  setShowEnrollModal(false);
+                  setEnrollForm({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    password: '',
+                    companyName: '',
+                    registrationNumber: '',
+                    businessLicense: '',
+                    description: '',
+                  });
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name *</label>
+                  <input
+                    type="text"
+                    value={enrollForm.name}
+                    onChange={(e) => setEnrollForm({ ...enrollForm, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={enrollForm.email}
+                    onChange={(e) => setEnrollForm({ ...enrollForm, email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                  <input
+                    type="tel"
+                    value={enrollForm.phone}
+                    onChange={(e) => setEnrollForm({ ...enrollForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                  <input
+                    type="password"
+                    value={enrollForm.password}
+                    onChange={(e) => setEnrollForm({ ...enrollForm, password: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+                  <input
+                    type="text"
+                    value={enrollForm.companyName}
+                    onChange={(e) => setEnrollForm({ ...enrollForm, companyName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Registration Number *</label>
+                  <input
+                    type="text"
+                    value={enrollForm.registrationNumber}
+                    onChange={(e) => setEnrollForm({ ...enrollForm, registrationNumber: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Business License</label>
+                <input
+                  type="text"
+                  value={enrollForm.businessLicense}
+                  onChange={(e) => setEnrollForm({ ...enrollForm, businessLicense: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={enrollForm.description}
+                  onChange={(e) => setEnrollForm({ ...enrollForm, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex space-x-3">
+              <button
+                onClick={async () => {
+                  if (!enrollForm.name || !enrollForm.email || !enrollForm.phone || !enrollForm.password || !enrollForm.companyName || !enrollForm.registrationNumber) {
+                    alert('Please fill in all required fields');
+                    return;
+                  }
+                  try {
+                    await api.post('/logistics-companies/enroll', enrollForm);
+                    alert('Company enrolled successfully');
+                    setShowEnrollModal(false);
+                    setEnrollForm({
+                      name: '',
+                      email: '',
+                      phone: '',
+                      password: '',
+                      companyName: '',
+                      registrationNumber: '',
+                      businessLicense: '',
+                      description: '',
+                    });
+                    fetchCompanies();
+                  } catch (error: any) {
+                    alert(error.response?.data?.message || 'Error enrolling company');
+                  }
+                }}
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md font-medium hover:bg-primary-700"
+              >
+                Enroll Company
+              </button>
+              <button
+                onClick={() => {
+                  setShowEnrollModal(false);
+                  setEnrollForm({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    password: '',
+                    companyName: '',
+                    registrationNumber: '',
+                    businessLicense: '',
+                    description: '',
+                  });
+                }}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md font-medium hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showModal && selectedCompany && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">

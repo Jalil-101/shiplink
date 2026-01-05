@@ -30,6 +30,7 @@ exports.getAvailableRoles = async (req, res) => {
       role: roleEntry.role,
       verified: roleEntry.verified,
       verifiedAt: roleEntry.verifiedAt,
+      requestedAt: roleEntry.requestedAt, // Include requestedAt to check if application is pending
       canActivate: roleEntry.verified // Can only activate verified roles
     }));
 

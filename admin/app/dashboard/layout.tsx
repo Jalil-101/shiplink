@@ -19,11 +19,13 @@ import {
   Bell,
   Activity,
   Settings,
+  ClipboardList,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Users', href: '/dashboard/users', icon: Users },
+  { name: 'Role Applications', href: '/dashboard/role-applications', icon: ClipboardList },
   { name: 'Drivers', href: '/dashboard/drivers', icon: Truck },
   { name: 'Sellers', href: '/dashboard/sellers', icon: Package },
   { name: 'Logistics', href: '/dashboard/logistics-companies', icon: Truck },
