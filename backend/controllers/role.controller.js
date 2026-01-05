@@ -295,7 +295,7 @@ exports.requestRole = async (req, res) => {
               userId,
               agentName: data?.agentName || user.name,
               specialization: data?.specialization || [],
-              coverageAreas: data?.coverageAreas ? data.coverageAreas.map((area: string) => ({ country: area, cities: [], regions: [] })) : [],
+              coverageAreas: data?.coverageAreas ? data.coverageAreas.map((area) => ({ country: area, cities: [], regions: [] })) : [],
               languages: data?.languages || [],
               bio: data?.bio || null,
               experience: data?.experience || null,
@@ -317,7 +317,7 @@ exports.requestRole = async (req, res) => {
             // Update existing agent profile with new data
             existingAgent.agentName = data?.agentName || existingAgent.agentName;
             existingAgent.specialization = data?.specialization || existingAgent.specialization;
-            existingAgent.coverageAreas = data?.coverageAreas ? data.coverageAreas.map((area: string) => ({ country: area, cities: [], regions: [] })) : existingAgent.coverageAreas;
+            existingAgent.coverageAreas = data?.coverageAreas ? data.coverageAreas.map((area) => ({ country: area, cities: [], regions: [] })) : existingAgent.coverageAreas;
             existingAgent.languages = data?.languages || existingAgent.languages;
             existingAgent.bio = data?.bio || existingAgent.bio;
             existingAgent.experience = data?.experience || existingAgent.experience;
