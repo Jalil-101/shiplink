@@ -48,6 +48,8 @@ function RoleApplicationsPageContent() {
   const [roleFilter, setRoleFilter] = useState(searchParams.get('role') || '');
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
   const [selectedApplication, setSelectedApplication] = useState<RoleApplication | null>(null);
+  const [fullApplicationDetails, setFullApplicationDetails] = useState<any>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showActionModal, setShowActionModal] = useState(false);
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
@@ -88,9 +90,13 @@ function RoleApplicationsPageContent() {
         return (
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 setSelectedApplication(application);
                 setShowDetailsModal(true);
+                setLoadingDetails(true);
+                const details = await fetchApplicationDetails(application.userId, application.role);
+                setFullApplicationDetails(details);
+                setLoadingDetails(false);
               }}
               className="p-1 text-blue-600 hover:bg-blue-50 rounded"
               title="View Details"
@@ -151,6 +157,16 @@ function RoleApplicationsPageContent() {
     }
   };
 
+  const fetchApplicationDetails = async (userId: string, role: string) => {
+    try {
+      const response = await api.get(`/role-applications/${userId}/${role}`);
+      return response.data.application;
+    } catch (error) {
+      console.error('Error fetching application details:', error);
+      return null;
+    }
+  };
+
   const handleAction = (application: RoleApplication, action: 'approve' | 'reject') => {
     setSelectedApplication(application);
     setActionType(action);
@@ -189,38 +205,66 @@ function RoleApplicationsPageContent() {
       case 'driver':
         return (
           <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-2">License Information</h4>
-              <div className="bg-gray-50 p-3 rounded">
-                <p><span className="font-medium">License Number:</span> {profile.licenseNumber || 'N/A'}</p>
-                <p><span className="font-medium">Expiry:</span> {profile.licenseExpiry || 'N/A'}</p>
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2 text-base">License Information</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-semibold text-gray-700">License Number:</span> <span className="text-gray-900">{profile.licenseNumber || 'N/A'}</span></p>
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Expiry:</span> <span className="text-gray-900">{profile.licenseExpiry || 'N/A'}</span></p>
+                </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Vehicle Information</h4>
-              <div className="bg-gray-50 p-3 rounded">
-                <p><span className="font-medium">Type:</span> {profile.vehicleType || 'N/A'}</p>
-                <p><span className="font-medium">Model:</span> {profile.vehicleModel || 'N/A'}</p>
-                <p><span className="font-medium">Plate:</span> {profile.vehiclePlate || 'N/A'}</p>
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Vehicle Information</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Type:</span> <span className="text-gray-900 capitalize">{profile.vehicleType || 'N/A'}</span></p>
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Model:</span> <span className="text-gray-900">{profile.vehicleModel || 'N/A'}</span></p>
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Plate:</span> <span className="text-gray-900">{profile.vehiclePlate || 'N/A'}</span></p>
+                </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Documents</h4>
-              <div className="bg-gray-50 p-3 rounded space-y-2">
-                {profile.governmentId && profile.governmentId.length > 0 && (
-                  <p><span className="font-medium">Government ID:</span> {profile.governmentId.length} file(s)</p>
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Documents</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
+                {profile.documents?.governmentId && Array.isArray(profile.documents.governmentId) && profile.documents.governmentId.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Government ID:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.governmentId.length} file(s)</span>
+                  </div>
                 )}
-                {profile.driversLicense && profile.driversLicense.length > 0 && (
-                  <p><span className="font-medium">Driver's License:</span> {profile.driversLicense.length} file(s)</p>
+                {profile.documents?.driversLicense && Array.isArray(profile.documents.driversLicense) && profile.documents.driversLicense.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Driver's License:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.driversLicense.length} file(s)</span>
+                  </div>
                 )}
-                {profile.vehicleRegistration && profile.vehicleRegistration.length > 0 && (
-                  <p><span className="font-medium">Vehicle Registration:</span> {profile.vehicleRegistration.length} file(s)</p>
+                {profile.documents?.vehicleRegistration && Array.isArray(profile.documents.vehicleRegistration) && profile.documents.vehicleRegistration.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Vehicle Registration:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.vehicleRegistration.length} file(s)</span>
+                  </div>
                 )}
-                {profile.insuranceDocument && profile.insuranceDocument.length > 0 && (
-                  <p><span className="font-medium">Insurance:</span> {profile.insuranceDocument.length} file(s)</p>
+                {profile.documents?.insuranceDocument && Array.isArray(profile.documents.insuranceDocument) && profile.documents.insuranceDocument.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Insurance:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.insuranceDocument.length} file(s)</span>
+                  </div>
                 )}
-                {profile.selfie && profile.selfie.length > 0 && (
-                  <p><span className="font-medium">Selfie:</span> {profile.selfie.length} file(s)</p>
+                {profile.documents?.selfie && Array.isArray(profile.documents.selfie) && profile.documents.selfie.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Selfie:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.selfie.length} file(s)</span>
+                  </div>
+                )}
+                {profile.idDocument && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">ID Document:</span>
+                    <span className="text-sm text-gray-900">1 file</span>
+                  </div>
+                )}
+                {(!profile.documents || (Object.keys(profile.documents || {}).length === 0 && !profile.idDocument)) && (
+                  <p className="text-sm text-gray-500 italic">No documents uploaded</p>
                 )}
               </div>
             </div>
@@ -231,29 +275,48 @@ function RoleApplicationsPageContent() {
         return (
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Business Information</h4>
-              <div className="bg-gray-50 p-3 rounded">
-                <p><span className="font-medium">Business Name:</span> {profile.businessName || 'N/A'}</p>
-                <p><span className="font-medium">Type:</span> {profile.businessType || 'N/A'}</p>
-                <p><span className="font-medium">Tax ID:</span> {profile.taxId || 'N/A'}</p>
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Business Information</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Business Name:</span> <span className="text-gray-900">{profile.businessName || 'N/A'}</span></p>
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Type:</span> <span className="text-gray-900 capitalize">{profile.businessType || 'N/A'}</span></p>
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Tax ID:</span> <span className="text-gray-900">{profile.taxId || 'N/A'}</span></p>
+                </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Bank Information</h4>
-              <div className="bg-gray-50 p-3 rounded">
-                <p><span className="font-medium">Account Number:</span> {profile.bankAccountNumber || 'N/A'}</p>
-                <p><span className="font-medium">Bank Name:</span> {profile.bankName || 'N/A'}</p>
-                <p><span className="font-medium">Account Holder:</span> {profile.accountHolderName || 'N/A'}</p>
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Bank Information</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Account Number:</span> <span className="text-gray-900">{profile.bankAccountNumber || 'N/A'}</span></p>
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Bank Name:</span> <span className="text-gray-900">{profile.bankName || 'N/A'}</span></p>
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Account Holder:</span> <span className="text-gray-900">{profile.accountHolderName || 'N/A'}</span></p>
+                </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Documents</h4>
-              <div className="bg-gray-50 p-3 rounded space-y-2">
-                {profile.businessRegistration && profile.businessRegistration.length > 0 && (
-                  <p><span className="font-medium">Business Registration:</span> {profile.businessRegistration.length} file(s)</p>
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Documents</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
+                {profile.documents?.businessRegistration && Array.isArray(profile.documents.businessRegistration) && profile.documents.businessRegistration.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Business Registration:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.businessRegistration.length} file(s)</span>
+                  </div>
                 )}
-                {profile.proofOfStock && profile.proofOfStock.length > 0 && (
-                  <p><span className="font-medium">Proof of Stock:</span> {profile.proofOfStock.length} file(s)</p>
+                {profile.documents?.proofOfStock && Array.isArray(profile.documents.proofOfStock) && profile.documents.proofOfStock.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Proof of Stock:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.proofOfStock.length} file(s)</span>
+                  </div>
+                )}
+                {profile.businessLicense && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Business License:</span>
+                    <span className="text-sm text-gray-900">1 file</span>
+                  </div>
+                )}
+                {(!profile.documents || (Object.keys(profile.documents || {}).length === 0 && !profile.businessLicense)) && (
+                  <p className="text-sm text-gray-500 italic">No documents uploaded</p>
                 )}
               </div>
             </div>
@@ -264,38 +327,49 @@ function RoleApplicationsPageContent() {
         return (
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Specializations</h4>
-              <div className="bg-gray-50 p-3 rounded">
-                {profile.specializations && profile.specializations.length > 0 ? (
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Specializations</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                {profile.specialization && Array.isArray(profile.specialization) && profile.specialization.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {profile.specializations.map((spec: string, idx: number) => (
-                      <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                    {profile.specialization.map((spec: string, idx: number) => (
+                      <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">
                         {spec}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">No specializations listed</p>
+                  <p className="text-sm text-gray-500 italic">No specializations listed</p>
                 )}
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Experience</h4>
-              <div className="bg-gray-50 p-3 rounded">
-                <p><span className="font-medium">Years:</span> {profile.yearsOfExperience || 'N/A'}</p>
-                {profile.previousClients && (
-                  <p><span className="font-medium">Previous Clients:</span> {profile.previousClients}</p>
-                )}
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Experience</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-semibold text-gray-700">Years:</span> <span className="text-gray-900">{profile.experience || 'N/A'}</span></p>
+                  {profile.bio && (
+                    <p className="text-sm"><span className="font-semibold text-gray-700">Bio:</span> <span className="text-gray-900">{profile.bio}</span></p>
+                  )}
+                </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Documents</h4>
-              <div className="bg-gray-50 p-3 rounded space-y-2">
-                {profile.businessLicense && profile.businessLicense.length > 0 && (
-                  <p><span className="font-medium">Business License:</span> {profile.businessLicense.length} file(s)</p>
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Documents</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
+                {profile.documents?.businessLicense && Array.isArray(profile.documents.businessLicense) && profile.documents.businessLicense.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Business License:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.businessLicense.length} file(s)</span>
+                  </div>
                 )}
-                {profile.certifications && profile.certifications.length > 0 && (
-                  <p><span className="font-medium">Certifications:</span> {profile.certifications.length} file(s)</p>
+                {profile.documents?.certifications && Array.isArray(profile.documents.certifications) && profile.documents.certifications.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Certifications:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.certifications.length} file(s)</span>
+                  </div>
+                )}
+                {(!profile.documents || Object.keys(profile.documents || {}).length === 0) && (
+                  <p className="text-sm text-gray-500 italic">No documents uploaded</p>
                 )}
               </div>
             </div>
@@ -306,38 +380,58 @@ function RoleApplicationsPageContent() {
         return (
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Expertise Areas</h4>
-              <div className="bg-gray-50 p-3 rounded">
-                {profile.expertiseAreas && profile.expertiseAreas.length > 0 ? (
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Expertise Areas</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                {profile.expertise && Array.isArray(profile.expertise) && profile.expertise.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {profile.expertiseAreas.map((area: string, idx: number) => (
-                      <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">
+                    {profile.expertise.map((area: string, idx: number) => (
+                      <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm font-medium">
                         {area}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">No expertise areas listed</p>
+                  <p className="text-sm text-gray-500 italic">No expertise areas listed</p>
                 )}
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Experience</h4>
-              <div className="bg-gray-50 p-3 rounded">
-                <p><span className="font-medium">Years:</span> {profile.yearsOfExperience || 'N/A'}</p>
-                {profile.qualifications && (
-                  <p><span className="font-medium">Qualifications:</span> {profile.qualifications}</p>
-                )}
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Experience & Qualifications</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="space-y-2">
+                  {profile.bio && (
+                    <p className="text-sm"><span className="font-semibold text-gray-700">Bio:</span> <span className="text-gray-900">{profile.bio}</span></p>
+                  )}
+                  {profile.qualifications && Array.isArray(profile.qualifications) && profile.qualifications.length > 0 && (
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700 mb-1">Qualifications:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {profile.qualifications.map((qual: string, idx: number) => (
+                          <li key={idx} className="text-sm text-gray-900">{qual}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Documents</h4>
-              <div className="bg-gray-50 p-3 rounded space-y-2">
-                {profile.certifications && profile.certifications.length > 0 && (
-                  <p><span className="font-medium">Certifications:</span> {profile.certifications.length} file(s)</p>
+              <h4 className="font-semibold text-gray-900 mb-2 text-base">Documents</h4>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
+                {profile.documents?.certifications && Array.isArray(profile.documents.certifications) && profile.documents.certifications.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Certifications:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.certifications.length} file(s)</span>
+                  </div>
                 )}
-                {profile.businessLicense && profile.businessLicense.length > 0 && (
-                  <p><span className="font-medium">Business License:</span> {profile.businessLicense.length} file(s)</p>
+                {profile.documents?.businessLicense && Array.isArray(profile.documents.businessLicense) && profile.documents.businessLicense.length > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-gray-700">Business License:</span>
+                    <span className="text-sm text-gray-900">{profile.documents.businessLicense.length} file(s)</span>
+                  </div>
+                )}
+                {(!profile.documents || Object.keys(profile.documents || {}).length === 0) && (
+                  <p className="text-sm text-gray-500 italic">No documents uploaded</p>
                 )}
               </div>
             </div>
@@ -463,32 +557,50 @@ function RoleApplicationsPageContent() {
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedApplication(null);
+                  setFullApplicationDetails(null);
                 }}
                 className="text-gray-400 hover:text-gray-600"
               >
                 ✕
               </button>
             </div>
-            <div className="space-y-6">
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Applicant Information</h4>
-                <div className="bg-gray-50 p-3 rounded">
-                  <p><span className="font-medium">Name:</span> {selectedApplication.userName}</p>
-                  <p><span className="font-medium">Email:</span> {selectedApplication.userEmail}</p>
-                  <p><span className="font-medium">Phone:</span> {selectedApplication.userPhone}</p>
-                  <p><span className="font-medium">Role Applied:</span> {roleLabels[selectedApplication.role]}</p>
-                  <p><span className="font-medium">Requested:</span> {new Date(selectedApplication.requestedAt).toLocaleString()}</p>
+            {loadingDetails ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2 text-base">Applicant Information</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div className="space-y-2">
+                      <p className="text-sm"><span className="font-semibold text-gray-700">Name:</span> <span className="text-gray-900">{selectedApplication.userName || 'N/A'}</span></p>
+                      <p className="text-sm"><span className="font-semibold text-gray-700">Email:</span> <span className="text-gray-900">{selectedApplication.userEmail || 'N/A'}</span></p>
+                      <p className="text-sm"><span className="font-semibold text-gray-700">Phone:</span> <span className="text-gray-900">{selectedApplication.userPhone || 'N/A'}</span></p>
+                      <p className="text-sm"><span className="font-semibold text-gray-700">Role Applied:</span> <span className="text-gray-900">{roleLabels[selectedApplication.role] || selectedApplication.role}</span></p>
+                      <p className="text-sm"><span className="font-semibold text-gray-700">Requested:</span> <span className="text-gray-900">{selectedApplication.requestedAt ? new Date(selectedApplication.requestedAt).toLocaleString() : 'N/A'}</span></p>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2 text-base">Application Details</h4>
+                  {fullApplicationDetails?.profile ? (
+                    renderProfileDetails(fullApplicationDetails.profile, selectedApplication.role)
+                  ) : selectedApplication.profile ? (
+                    renderProfileDetails(selectedApplication.profile, selectedApplication.role)
+                  ) : (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-sm text-yellow-800">No profile data available for this application.</p>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Application Details</h4>
-                {renderProfileDetails(selectedApplication.profile, selectedApplication.role)}
-              </div>
-            </div>
+            )}
             <div className="mt-6 flex space-x-3">
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
+                  setFullApplicationDetails(null);
                   handleAction(selectedApplication, 'approve');
                 }}
                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md font-medium hover:bg-green-700"
@@ -498,6 +610,7 @@ function RoleApplicationsPageContent() {
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
+                  setFullApplicationDetails(null);
                   handleAction(selectedApplication, 'reject');
                 }}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700"
