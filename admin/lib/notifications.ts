@@ -3,7 +3,7 @@
  * Handles notifications for admin users
  */
 
-import { api } from './api';
+import api from './api';
 
 export interface AdminNotification {
   _id: string;
@@ -18,6 +18,7 @@ export interface AdminNotification {
   relatedId?: string;
   relatedType?: string;
   createdAt: string;
+  isSystemNotification?: boolean;
 }
 
 export interface BadgeCounts {
