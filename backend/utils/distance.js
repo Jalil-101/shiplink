@@ -29,4 +29,52 @@ function toRad(degrees) {
   return (degrees * Math.PI) / 180;
 }
 
-module.exports = { calculateDistance };
+/**
+ * Calculate estimated delivery time based on distance
+ * @param {number} distance - Distance in kilometers
+ * @returns {string} Estimated time in a human-readable format
+ */
+function calculateEstimatedTime(distance) {
+  // Average delivery speed: 30 km/h in urban areas
+  const averageSpeed = 30; // km/h
+  const hours = distance / averageSpeed;
+  const minutes = Math.round(hours * 60);
+  
+  if (minutes < 60) {
+    return `${minutes} minutes`;
+  } else {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) {
+      return `${hours} hour${hours > 1 ? 's' : ''}`;
+    }
+    return `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}`;
+  }
+}
+
+/**
+ * Calculate delivery price based on distance and weight
+ * @param {number} distance - Distance in kilometers
+ * @param {number} weight - Weight in kilograms
+ * @returns {number} Price in the base currency
+ */
+function calculatePrice(distance, weight) {
+  // Base price
+  const basePrice = 5; // Base delivery fee
+  
+  // Distance-based pricing: $2 per km
+  const distancePrice = distance * 2;
+  
+  // Weight-based pricing: $1 per kg
+  const weightPrice = weight * 1;
+  
+  // Total price
+  const totalPrice = basePrice + distancePrice + weightPrice;
+  
+  // Minimum price
+  const minPrice = 10;
+  
+  return Math.max(totalPrice, minPrice);
+}
+
+module.exports = { calculateDistance, calculateEstimatedTime, calculatePrice };
