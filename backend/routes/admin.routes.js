@@ -12,8 +12,6 @@ const adminUserController = require('../controllers/adminUser.controller');
 const adminDriverController = require('../controllers/adminDriver.controller');
 const adminDeliveryController = require('../controllers/adminDelivery.controller');
 const adminContentController = require('../controllers/adminContent.controller');
-const adminNotificationController = require('../controllers/adminNotification.controller');
-const adminPersonalNotificationController = require('../controllers/adminNotification.controller');
 
 // Import middleware
 const { protect, restrictTo } = require('../middleware/adminAuth');
