@@ -57,7 +57,7 @@ export async function getAdminNotifications(filters?: {
  * Get admin badge counts
  */
 export async function getAdminBadgeCounts(): Promise<BadgeCounts> {
-  const response = await api.get('/admin/notifications/badges');
+  const response = await api.get('/notifications/badges');
   return response.data;
 }
 
