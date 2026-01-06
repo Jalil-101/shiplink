@@ -18,6 +18,7 @@ const {
   logOrderCompleted,
   logCommissionCalculated
 } = require('../utils/eventLogger');
+const { createNotification } = require('../utils/notificationService');
 
 /**
  * Calculate delivery fee
@@ -130,6 +131,50 @@ exports.createOrder = async (req, res) => {
     // Emit real-time update
     if (req.io) {
       req.io.emit('order:created', order);
+    }
+
+    // Create notification for user
+    try {
+      await createNotification({
+        userId: req.user._id,
+        title: 'Order Created',
+        message: `Your ${order.order_type} order has been created successfully. Order #${order.orderNumber || order._id}`,
+        category: 'orders',
+        type: 'success',
+        priority: 'medium',
+        actionUrl: `/orders/${order._id}`,
+        relatedId: order._id,
+        relatedType: 'order',
+        metadata: {
+          orderType: order.order_type,
+          orderNumber: order.orderNumber,
+          amount: grossAmount
+        }
+      });
+
+      // Notify seller for marketplace orders
+      if (order.order_type === 'marketplace' && order.provider_id) {
+        await createNotification({
+          userId: order.provider_id,
+          title: 'New Order Received',
+          message: `You have received a new marketplace order. Order #${order.orderNumber || order._id}`,
+          category: 'products',
+          type: 'info',
+          priority: 'high',
+          actionUrl: `/orders/${order._id}`,
+          relatedId: order._id,
+          relatedType: 'order',
+          metadata: {
+            orderType: order.order_type,
+            orderNumber: order.orderNumber,
+            amount: grossAmount,
+            itemCount: order.items?.length || 0
+          }
+        });
+      }
+    } catch (notifError) {
+      console.error('Error creating order notification', notifError);
+      // Don't fail order creation if notification fails
     }
 
     res.status(201).json({
@@ -537,6 +582,63 @@ exports.updateOrderStatus = async (req, res) => {
         status: order.status,
         oldStatus
       });
+    }
+
+    // Create notifications for status changes
+    try {
+      const statusMessages = {
+        'provider_assigned': 'Your order has been assigned to a provider',
+        'in_progress': 'Your order is now in progress',
+        'completed': 'Your order has been completed successfully',
+        'cancelled': 'Your order has been cancelled'
+      };
+
+      const message = statusMessages[status] || `Your order status has been updated to ${status}`;
+      const notificationType = status === 'completed' ? 'success' : status === 'cancelled' ? 'warning' : 'info';
+      const priority = status === 'completed' || status === 'cancelled' ? 'high' : 'medium';
+
+      // Notify order owner
+      await createNotification({
+        userId: order.userId,
+        title: 'Order Status Updated',
+        message: `${message}. Order #${order.orderNumber || order._id}`,
+        category: 'orders',
+        type: notificationType,
+        priority,
+        actionUrl: `/orders/${order._id}`,
+        relatedId: order._id,
+        relatedType: 'order',
+        metadata: {
+          orderType: order.order_type,
+          orderNumber: order.orderNumber,
+          status,
+          oldStatus
+        }
+      });
+
+      // Notify provider if assigned
+      if (order.provider_id && (status === 'provider_assigned' || status === 'in_progress' || status === 'completed')) {
+        await createNotification({
+          userId: order.provider_id,
+          title: 'Order Update',
+          message: `Order #${order.orderNumber || order._id} status updated to ${status}`,
+          category: 'orders',
+          type: notificationType,
+          priority,
+          actionUrl: `/orders/${order._id}`,
+          relatedId: order._id,
+          relatedType: 'order',
+          metadata: {
+            orderType: order.order_type,
+            orderNumber: order.orderNumber,
+            status,
+            oldStatus
+          }
+        });
+      }
+    } catch (notifError) {
+      console.error('Error creating order status notification', notifError);
+      // Don't fail status update if notification fails
     }
 
     res.json({

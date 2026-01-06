@@ -109,7 +109,7 @@ exports.getUserById = async (req, res, next) => {
  */
 exports.updateUser = async (req, res, next) => {
   try {
-    const { name, phone, avatar } = req.body;
+    const { name, phone, avatar, pushToken } = req.body;
     const userId = req.params.id;
 
     // Check if user is updating their own profile
@@ -124,6 +124,7 @@ exports.updateUser = async (req, res, next) => {
     if (name) updateData.name = name.trim();
     if (phone) updateData.phone = phone.trim();
     if (avatar !== undefined) updateData.avatar = avatar; // Can be null to remove avatar
+    if (pushToken !== undefined) updateData.pushToken = pushToken; // For push notifications
 
     const user = await User.findByIdAndUpdate(
       userId,

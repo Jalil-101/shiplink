@@ -110,6 +110,10 @@ const userSchema = new mongoose.Schema({
   lastActivity: {
     type: Date,
     default: Date.now
+  },
+  pushToken: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true // Adds createdAt and updatedAt

@@ -21,6 +21,7 @@ import {
   Settings,
   ClipboardList,
 } from 'lucide-react';
+import NotificationBell from '@/components/NotificationBell';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -142,7 +143,7 @@ export default function DashboardLayout({
             <h2 className="text-lg font-semibold text-gray-900">
               {navigation.find((item) => item.href === pathname)?.name || 'Dashboard'}
             </h2>
-            <div className="w-6" /> {/* Spacer for mobile */}
+            <NotificationBell />
           </div>
         </div>
 

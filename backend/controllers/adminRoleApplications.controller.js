@@ -9,6 +9,7 @@ const Seller = require('../models/Seller.model');
 const SourcingAgent = require('../models/SourcingAgent.model');
 const ImportCoach = require('../models/ImportCoach.model');
 const { createAuditLog } = require('../middleware/adminAuth');
+const { createNotification } = require('../utils/notificationService');
 
 /**
  * @route   GET /api/admin/role-applications
@@ -270,6 +271,29 @@ exports.approveApplication = async (req, res) => {
       { notes }
     );
 
+    // Create notification for user
+    try {
+      await createNotification({
+        userId: userId,
+        title: 'Role Application Approved',
+        message: `Congratulations! Your ${role.replace('-', ' ')} role application has been approved. You can now switch to this role.`,
+        category: 'role_applications',
+        type: 'success',
+        priority: 'high',
+        actionUrl: '/profile',
+        relatedId: userId,
+        relatedType: 'role_application',
+        metadata: {
+          role,
+          status: 'approved',
+          verifiedAt: roleEntry.verifiedAt
+        }
+      });
+    } catch (notifError) {
+      console.error('Error creating role approval notification', notifError);
+      // Don't fail approval if notification fails
+    }
+
     res.json({
       message: 'Role application approved successfully',
       application: {
@@ -372,6 +396,29 @@ exports.rejectApplication = async (req, res) => {
       `${userId}_${role}`,
       { notes }
     );
+
+    // Create notification for user
+    try {
+      await createNotification({
+        userId: userId,
+        title: 'Role Application Rejected',
+        message: `Your ${role.replace('-', ' ')} role application has been rejected. Reason: ${notes}. You can reapply with updated information.`,
+        category: 'role_applications',
+        type: 'warning',
+        priority: 'high',
+        actionUrl: '/become-role',
+        relatedId: userId,
+        relatedType: 'role_application',
+        metadata: {
+          role,
+          status: 'rejected',
+          notes
+        }
+      });
+    } catch (notifError) {
+      console.error('Error creating role rejection notification', notifError);
+      // Don't fail rejection if notification fails
+    }
 
     res.json({
       message: 'Role application rejected successfully',

@@ -30,6 +30,7 @@ const importCoachRoutes = require('./routes/importCoach.routes');
 const sellerRoutes = require('./routes/seller.routes');
 const roleRoutes = require('./routes/role.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const notificationRoutes = require('./routes/notification.routes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -97,6 +98,7 @@ app.use('/api/import-coaches', importCoachRoutes); // Import coaches
 app.use('/api/sellers', sellerRoutes); // Sellers
 app.use('/api/roles', roleRoutes); // Role switching and management
 app.use('/api/upload', uploadLimiter, uploadRoutes); // File uploads with rate limiting
+app.use('/api/notifications', notificationRoutes); // User notifications
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

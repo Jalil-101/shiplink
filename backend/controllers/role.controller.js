@@ -9,6 +9,7 @@ const Seller = require('../models/Seller.model');
 const SourcingAgent = require('../models/SourcingAgent.model');
 const ImportCoach = require('../models/ImportCoach.model');
 const { logRoleSwitched, logRoleRequested } = require('../utils/eventLogger');
+const { createNotification } = require('../utils/notificationService');
 
 /**
  * Get user's available roles
@@ -385,6 +386,28 @@ exports.requestRole = async (req, res) => {
 
     // Log role request
     await logRoleRequested(userId, role);
+
+    // Create notification for user
+    try {
+      await createNotification({
+        userId: userId,
+        title: 'Role Application Submitted',
+        message: `Your ${role.replace('-', ' ')} role application has been submitted and is pending admin review.`,
+        category: 'role_applications',
+        type: 'info',
+        priority: 'medium',
+        actionUrl: '/role-applications',
+        relatedId: userId,
+        relatedType: 'role_application',
+        metadata: {
+          role,
+          status: 'pending'
+        }
+      });
+    } catch (notifError) {
+      console.error('Error creating role application notification', notifError);
+      // Don't fail role request if notification fails
+    }
 
     res.json({
       success: true,

@@ -12,6 +12,8 @@ const adminUserController = require('../controllers/adminUser.controller');
 const adminDriverController = require('../controllers/adminDriver.controller');
 const adminDeliveryController = require('../controllers/adminDelivery.controller');
 const adminContentController = require('../controllers/adminContent.controller');
+const adminNotificationController = require('../controllers/adminNotification.controller');
+const adminPersonalNotificationController = require('../controllers/adminNotification.controller');
 
 // Import middleware
 const { protect, restrictTo } = require('../middleware/adminAuth');
@@ -86,10 +88,17 @@ router.get('/system/stats', protect, adminSystemController.getSystemStats);
 
 // ==================== Notification Management ====================
 const adminNotificationController = require('../controllers/adminNotification.controller');
+// System-wide notifications (announcements)
 router.get('/notifications', protect, adminNotificationController.getAllNotifications);
 router.post('/notifications', protect, adminNotificationController.createNotification);
 router.patch('/notifications/:id', protect, adminNotificationController.updateNotification);
 router.delete('/notifications/:id', protect, adminNotificationController.deleteNotification);
+// Admin personal notifications
+router.get('/notifications/personal', protect, adminNotificationController.getAdminNotifications);
+router.get('/notifications/badges', protect, adminNotificationController.getAdminBadgeCounts);
+router.patch('/notifications/personal/:id/read', protect, adminNotificationController.markAdminNotificationAsRead);
+router.patch('/notifications/personal/read-all', protect, adminNotificationController.markAllAdminNotificationsAsRead);
+router.delete('/notifications/personal/:id', protect, adminNotificationController.deleteAdminNotification);
 
 // ==================== Product Management ====================
 const adminProductController = require('../controllers/adminProduct.controller');
