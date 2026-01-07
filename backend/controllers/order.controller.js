@@ -237,21 +237,65 @@ async function createDeliveryOrder(userId, data) {
     }
   }
 
-  const order = await Order.create({
+  // Enhanced booking data
+  const orderData = {
     order_type: 'delivery',
     userId,
     provider_id: providerId,
     providerModel,
     gross_amount: price,
     status: driverId ? 'provider_assigned' : 'created',
-    pickupLocation,
-    dropoffLocation,
-    packageDetails,
+    pickupLocation: {
+      ...pickupLocation,
+      // Store enhanced contact info if provided
+      contactName: pickupLocation.contactName || null,
+      contactPhone: pickupLocation.contactPhone || null,
+      contactEmail: pickupLocation.contactEmail || null,
+      city: pickupLocation.city || null,
+      state: pickupLocation.state || null,
+      country: pickupLocation.country || null,
+      zipCode: pickupLocation.zipCode || null,
+    },
+    dropoffLocation: {
+      ...dropoffLocation,
+      // Store enhanced contact info if provided
+      contactName: dropoffLocation.contactName || null,
+      contactPhone: dropoffLocation.contactPhone || null,
+      contactEmail: dropoffLocation.contactEmail || null,
+      city: dropoffLocation.city || null,
+      state: dropoffLocation.state || null,
+      country: dropoffLocation.country || null,
+      zipCode: dropoffLocation.zipCode || null,
+    },
+    packageDetails: {
+      ...packageDetails,
+      // Store enhanced cargo details if provided
+      cargoType: packageDetails.cargoType || null,
+      packagingType: packageDetails.packagingType || null,
+      quantity: packageDetails.quantity || 1,
+      weightUnit: packageDetails.weightUnit || 'kg',
+      dimensions: {
+        ...packageDetails.dimensions,
+        unit: packageDetails.dimensions?.unit || 'cm',
+      },
+      declaredValue: packageDetails.declaredValue || null,
+      currency: packageDetails.currency || 'USD',
+    },
     driverId,
     distance,
     estimatedDeliveryTime: estimatedTime,
-    assignedAt: driverId ? new Date() : null
-  });
+    assignedAt: driverId ? new Date() : null,
+  };
+
+  // Add optional fields if provided
+  if (data.pickupDate) orderData.pickupDate = new Date(data.pickupDate);
+  if (data.deliveryDate) orderData.deliveryDate = new Date(data.deliveryDate);
+  if (data.incoterms) orderData.incoterms = data.incoterms;
+  if (data.specialInstructions) orderData.specialInstructions = data.specialInstructions;
+  if (data.insuranceRequired !== undefined) orderData.insuranceRequired = data.insuranceRequired;
+  if (data.customsInfo) orderData.customsInfo = data.customsInfo;
+
+  const order = await Order.create(orderData);
 
   return order;
 }
