@@ -68,7 +68,7 @@ exports.getProductById = async (req, res) => {
     }
 
     const product = await Product.findById(productId)
-      .select('name description price category images stock isFeatured weight dimensions createdAt');
+      .select('name description price category images stock isFeatured weight dimensions createdAt isActive');
 
     if (!product) {
       return res.status(404).json({
@@ -77,15 +77,15 @@ exports.getProductById = async (req, res) => {
       });
     }
 
-    if (!product.isActive) {
-      return res.status(404).json({
-        error: 'Not Found',
-        message: 'Product not available'
-      });
-    }
+    // Allow viewing inactive products but show a warning in metadata
+    // This prevents errors when users click on products from their history
+    // Frontend can decide whether to show the product or display a message
 
     res.json({
-      product
+      product: {
+        ...product.toObject(),
+        isActive: product.isActive !== false // Return true if not explicitly false
+      }
     });
   } catch (error) {
     console.error('Get product by ID error:', error);
