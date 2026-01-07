@@ -228,7 +228,7 @@ function LogisticsCompaniesPageContent() {
               placeholder="Search companies..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
             />
           </div>
           <select
@@ -349,7 +349,7 @@ function LogisticsCompaniesPageContent() {
                     type="text"
                     value={enrollForm.name}
                     onChange={(e) => setEnrollForm({ ...enrollForm, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                     required
                   />
                 </div>
@@ -359,7 +359,7 @@ function LogisticsCompaniesPageContent() {
                     type="email"
                     value={enrollForm.email}
                     onChange={(e) => setEnrollForm({ ...enrollForm, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                     required
                   />
                 </div>
@@ -369,7 +369,7 @@ function LogisticsCompaniesPageContent() {
                     type="tel"
                     value={enrollForm.phone}
                     onChange={(e) => setEnrollForm({ ...enrollForm, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                     required
                   />
                 </div>
@@ -379,7 +379,7 @@ function LogisticsCompaniesPageContent() {
                     type="password"
                     value={enrollForm.password}
                     onChange={(e) => setEnrollForm({ ...enrollForm, password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                     required
                   />
                 </div>
@@ -389,7 +389,7 @@ function LogisticsCompaniesPageContent() {
                     type="text"
                     value={enrollForm.companyName}
                     onChange={(e) => setEnrollForm({ ...enrollForm, companyName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                     required
                   />
                 </div>
@@ -399,7 +399,7 @@ function LogisticsCompaniesPageContent() {
                     type="text"
                     value={enrollForm.registrationNumber}
                     onChange={(e) => setEnrollForm({ ...enrollForm, registrationNumber: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                     required
                   />
                 </div>
@@ -410,7 +410,7 @@ function LogisticsCompaniesPageContent() {
                   type="text"
                   value={enrollForm.businessLicense}
                   onChange={(e) => setEnrollForm({ ...enrollForm, businessLicense: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                 />
               </div>
               <div>
@@ -419,7 +419,7 @@ function LogisticsCompaniesPageContent() {
                   value={enrollForm.description}
                   onChange={(e) => setEnrollForm({ ...enrollForm, description: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                 />
               </div>
             </div>
@@ -495,7 +495,7 @@ function LogisticsCompaniesPageContent() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
                 placeholder={actionType === 'approve' ? 'Optional notes...' : 'Enter notes...'}
                 required={actionType !== 'approve'}
               />
