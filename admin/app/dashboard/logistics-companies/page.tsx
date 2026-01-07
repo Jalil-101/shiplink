@@ -495,8 +495,10 @@ function LogisticsCompaniesPageContent() {
                       companyName: '',
                       registrationNumber: '',
                       businessLicense: '',
+                      logo: '',
                       description: '',
                     });
+                    setLogoPreview('');
                     fetchCompanies();
                   } catch (error: any) {
                     alert(error.response?.data?.message || 'Error enrolling company');
