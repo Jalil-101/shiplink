@@ -147,14 +147,17 @@ npx expo start
 ### Backend (Render)
 - ✅ Deployed: `https://shiplink-q4hu.onrender.com`
 - Auto-deploy from GitHub enabled
+- Health check: `GET /health`
 
 ### Admin Dashboard (Vercel)
-- See `DEPLOYMENT_GUIDE.md` for step-by-step instructions
-- Requires: `NEXT_PUBLIC_API_URL` environment variable
+- Root: `admin/`
+- Build: `npm run build`
+- Env: `NEXT_PUBLIC_API_URL=https://shiplink-q4hu.onrender.com`
 
 ### Mobile App (EAS Build)
-- Android APK: `eas build --platform android`
-- iOS IPA: `eas build --platform ios`
+- Prereq: Expo account + `eas-cli`
+- Android: `cd frontend && eas build --platform android --profile preview`
+- iOS: `cd frontend && eas build --platform ios --profile preview`
 
 ---
 
@@ -226,25 +229,52 @@ Default credentials (change after first login):
 
 ---
 
-## 🔒 Security Features
+## 🔒 Security & RBAC
 
-- JWT authentication
+- JWT authentication with secure token storage (expo-secure-store)
 - Password hashing (bcrypt)
-- Role-based access control
-- Input validation
-- CORS configuration
-- Secure storage for tokens
-- Admin audit logging
+- Role-based access control with multi-role support (`user`, `driver`, `seller`, `logistics-company`, `sourcing-agent`, `import-coach`, `admin`)
+- Backend `restrictTo` middleware checks **all verified roles**, not just `activeRole`
+- Frontend `roleAccess` utilities provide graceful handling and guidance when access is denied
+- Rate limiting for auth, uploads, admin, and general API
+- Input validation on all critical endpoints
+- CORS configuration and security headers
+- Admin audit logging for sensitive actions
 
 ---
 
-## 📈 Performance
+## 📈 Performance & Real-time Features
 
-- Image compression
-- Database indexing
-- Real-time updates (Socket.io)
-- Efficient queries
-- Caching strategies (ready for implementation)
+- Image compression on mobile uploads
+- Database indexing on high-traffic collections
+- Real-time updates via Socket.io for:
+  - Order creation and status changes
+  - Cart and stock updates
+  - Settings changes
+  - Notifications and badge counts
+- Efficient queries and pagination on admin/dashboard views
+
+---
+
+## 🔔 Notifications & Tracking IDs
+
+### Notification System
+- Central `UserNotification` model with categories (orders, applications, system, etc.)
+- Backend services to create, mark-as-read, delete, and compute badge counts
+- Socket.io-powered real-time badge updates for mobile and admin dashboards
+- Mobile NotificationContext manages in-app list, counts, and local alerts
+- Expo push notifications integrated for mobile devices (where permissions are granted)
+
+### Deterministic Tracking / Order IDs
+- `Counter` model and `idGenerator` utility provide sequential, human-readable IDs
+- Global ID: `ORD-YYYYMMDD-########` (per-day global sequence)
+- Per-account order number: `SHL-<roleCode>-<shortUserId>-<dailySeq>`
+- All orders (delivery, marketplace, logistics) store both `order_id` and `orderNumber`
+- Track tab supports searching by any tracking ID and surfaces the same IDs in:
+  - User Track tab
+  - Driver deliveries
+  - Logistics dashboard orders
+  - Notifications and deep links
 
 ---
 
@@ -260,29 +290,22 @@ Default credentials (change after first login):
 
 ---
 
-## 📝 Documentation
+## ✅ Production Checklist (Condensed)
 
-- `DEPLOYMENT_GUIDE.md` - Complete deployment instructions
-- `PROGRESS_REPORT.md` - Detailed progress tracking
-- `README.md` - Project overview
-
----
-
-## ✅ Production Checklist
-
-- [x] Backend deployed and running
-- [x] All features implemented
-- [x] Real-time updates working
-- [x] Admin dashboard ready
-- [x] Mobile app ready
-- [ ] Admin dashboard deployed (pending)
-- [ ] Payment integration (optional)
-- [ ] Cloud image storage (optional)
+- [x] Backend deployed and healthy (`/health`)
+- [x] MongoDB Atlas connected
+- [x] API URL standardized across mobile and admin
+- [x] Multi-role system and RBAC in place
+- [x] Deterministic order/tracking ID scheme implemented
+- [x] Notification system (in-app + push) implemented for all roles
+- [x] Admin dashboard feature-complete and buildable on Vercel
+- [x] Mobile app stable on physical devices (Expo)
+- [ ] Optional: Payments, cloud image storage, advanced analytics
 
 ---
 
-**Last Updated**: 2025-01-30  
-**Version**: 1.0.0  
+**Last Updated**: 2026-01-07  
+**Version**: 2.0.0  
 **Status**: Production Ready ✅
 
 

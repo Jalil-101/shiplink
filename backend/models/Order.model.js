@@ -361,26 +361,6 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate order_id and orderNumber before saving
-// This hook runs before validation, so it can set required fields
-orderSchema.pre('validate', function(next) {
-  // Generate order_id if not set
-  if (!this.order_id) {
-    const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    this.order_id = `ORD-${timestamp}-${random}`;
-  }
-  
-  // Generate orderNumber if not set
-  if (!this.orderNumber) {
-    const timestamp = Date.now().toString().slice(-8);
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    this.orderNumber = `ORD-${timestamp}-${random}`;
-  }
-  
-  next();
-});
-
 // Initialize status history before saving
 orderSchema.pre('save', async function(next) {
   // Initialize status history if empty

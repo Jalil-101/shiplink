@@ -19,6 +19,7 @@ const {
   logCommissionCalculated
 } = require('../utils/eventLogger');
 const { createNotification } = require('../utils/notificationService');
+const { generateGlobalOrderId, generateOrderNumber } = require('../utils/idGenerator');
 
 /**
  * Calculate delivery fee
@@ -71,25 +72,31 @@ exports.createOrder = async (req, res) => {
     let order;
     let grossAmount = 0;
 
+    // Generate IDs for this order
+    const user = req.user;
+    const activeRole = user.activeRole || user.role || 'user';
+    const order_id = await generateGlobalOrderId(new Date());
+    const orderNumber = await generateOrderNumber(user, activeRole, new Date());
+
     // Create order based on type
     switch (order_type) {
       case 'delivery':
-        order = await createDeliveryOrder(req.user._id, orderData);
+        order = await createDeliveryOrder(req.user._id, { ...orderData, order_id, orderNumber });
         grossAmount = order.gross_amount;
         break;
 
       case 'marketplace':
-        order = await createMarketplaceOrder(req.user._id, orderData, req);
+        order = await createMarketplaceOrder(req.user._id, { ...orderData, order_id, orderNumber }, req);
         grossAmount = order.gross_amount;
         break;
 
       case 'sourcing':
-        order = await createSourcingOrder(req.user._id, orderData);
+        order = await createSourcingOrder(req.user._id, { ...orderData, order_id, orderNumber });
         grossAmount = order.gross_amount;
         break;
 
       case 'coaching':
-        order = await createCoachingOrder(req.user._id, orderData);
+        order = await createCoachingOrder(req.user._id, { ...orderData, order_id, orderNumber });
         grossAmount = order.gross_amount;
         break;
 
@@ -138,16 +145,17 @@ exports.createOrder = async (req, res) => {
       await createNotification({
         userId: req.user._id,
         title: 'Order Created',
-        message: `Your ${order.order_type} order has been created successfully. Order #${order.orderNumber || order._id}`,
+        message: `Your ${order.order_type} order has been created successfully. Order #${order.orderNumber || order.order_id || order._id}`,
         category: 'orders',
         type: 'success',
         priority: 'medium',
-        actionUrl: `/orders/${order._id}`,
+        actionUrl: `/(user)/(tabs)/track?trackingId=${order.orderNumber || order.order_id || order._id}`,
         relatedId: order._id,
         relatedType: 'order',
         metadata: {
-          orderType: order.order_type,
+          order_id: order.order_id,
           orderNumber: order.orderNumber,
+          orderType: order.order_type,
           amount: grossAmount
         }
       });
@@ -157,16 +165,17 @@ exports.createOrder = async (req, res) => {
         await createNotification({
           userId: order.provider_id,
           title: 'New Order Received',
-          message: `You have received a new marketplace order. Order #${order.orderNumber || order._id}`,
+          message: `You have received a new marketplace order. Order #${order.orderNumber || order.order_id || order._id}`,
           category: 'products',
           type: 'info',
           priority: 'high',
-          actionUrl: `/orders/${order._id}`,
+          actionUrl: `/(user)/seller-orders`,
           relatedId: order._id,
           relatedType: 'order',
           metadata: {
-            orderType: order.order_type,
+            order_id: order.order_id,
             orderNumber: order.orderNumber,
+            orderType: order.order_type,
             amount: grossAmount,
             itemCount: order.items?.length || 0
           }
@@ -195,7 +204,7 @@ exports.createOrder = async (req, res) => {
  * Create delivery order
  */
 async function createDeliveryOrder(userId, data) {
-  const { pickupLocation, dropoffLocation, packageDetails, driverId } = data;
+  const { pickupLocation, dropoffLocation, packageDetails, driverId, order_id, orderNumber } = data;
 
   if (!pickupLocation || !dropoffLocation || !packageDetails) {
     throw new Error('Pickup location, dropoff location, and package details are required');
@@ -239,6 +248,8 @@ async function createDeliveryOrder(userId, data) {
 
   // Enhanced booking data
   const orderData = {
+    order_id,
+    orderNumber,
     order_type: 'delivery',
     userId,
     provider_id: providerId,
@@ -372,6 +383,8 @@ async function createMarketplaceOrder(userId, data, req) {
 
   // Create order
   const order = await Order.create({
+    order_id: orderData.order_id,
+    orderNumber: orderData.orderNumber,
     order_type: 'marketplace',
     userId,
     provider_id: sellerId,
@@ -424,13 +437,15 @@ async function createMarketplaceOrder(userId, data, req) {
  * Create sourcing order
  */
 async function createSourcingOrder(userId, data) {
-  const { sourcingAgentId, sourcingDetails, requirements, amount } = data;
+  const { sourcingAgentId, sourcingDetails, requirements, amount, order_id, orderNumber } = data;
 
   if (!sourcingAgentId || !amount) {
     throw new Error('Sourcing agent ID and amount are required');
   }
 
   const order = await Order.create({
+    order_id,
+    orderNumber,
     order_type: 'sourcing',
     userId,
     provider_id: sourcingAgentId,
@@ -449,13 +464,15 @@ async function createSourcingOrder(userId, data) {
  * Create coaching order
  */
 async function createCoachingOrder(userId, data) {
-  const { importCoachId, coachingType, sessionDetails, amount } = data;
+  const { importCoachId, coachingType, sessionDetails, amount, order_id, orderNumber } = data;
 
   if (!importCoachId || !amount) {
     throw new Error('Import coach ID and amount are required');
   }
 
   const order = await Order.create({
+    order_id,
+    orderNumber,
     order_type: 'coaching',
     userId,
     provider_id: importCoachId,
@@ -520,6 +537,85 @@ exports.getOrders = async (req, res) => {
     res.status(500).json({
       error: 'Server Error',
       message: 'Error fetching orders'
+    });
+  }
+};
+
+/**
+ * @route   GET /api/orders/track
+ * @desc    Track order by trackingId (order_id or orderNumber)
+ * @access  Private (User / Provider / Admin)
+ */
+exports.trackOrder = async (req, res) => {
+  try {
+    const { trackingId } = req.query;
+
+    if (!trackingId || typeof trackingId !== 'string') {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'trackingId query parameter is required'
+      });
+    }
+
+    let query = {};
+
+    if (trackingId.startsWith('ORD-')) {
+      // Could be order_id
+      query = { order_id: trackingId };
+    } else if (trackingId.startsWith('SHL-')) {
+      // Human-readable orderNumber
+      query = { orderNumber: trackingId };
+    } else {
+      // Fallback: try both fields
+      query = {
+        $or: [
+          { order_id: trackingId },
+          { orderNumber: trackingId }
+        ]
+      };
+    }
+
+    // Scope to current user by default
+    const userId = req.user._id || req.user.id;
+
+    const user = req.user;
+    const isAdmin = user && (user.role === 'admin' || user.role === 'super-admin');
+
+    let scopedQuery = { ...query };
+
+    if (!isAdmin) {
+      // Regular user: must be the owner of the order
+      scopedQuery.userId = userId;
+    }
+
+    const order = await Order.findOne(scopedQuery);
+
+    if (!order && !isAdmin) {
+      // If not found as user-owned order, allow providers to find by provider_id
+      scopedQuery = { ...query, provider_id: userId };
+      const providerOrder = await Order.findOne(scopedQuery);
+      if (!providerOrder) {
+        return res.status(404).json({
+          error: 'Not Found',
+          message: 'Order not found for this account'
+        });
+      }
+      return res.json({ order: providerOrder });
+    }
+
+    if (!order) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Order not found'
+      });
+    }
+
+    res.json({ order });
+  } catch (error) {
+    console.error('Track order error:', error);
+    res.status(500).json({
+      error: 'Server Error',
+      message: 'Error tracking order'
     });
   }
 };
@@ -656,16 +752,17 @@ exports.updateOrderStatus = async (req, res) => {
       await createNotification({
         userId: order.userId,
         title: 'Order Status Updated',
-        message: `${message}. Order #${order.orderNumber || order._id}`,
+        message: `${message}. Order #${order.orderNumber || order.order_id || order._id}`,
         category: 'orders',
         type: notificationType,
         priority,
-        actionUrl: `/orders/${order._id}`,
+        actionUrl: `/(user)/(tabs)/track?trackingId=${order.orderNumber || order.order_id || order._id}`,
         relatedId: order._id,
         relatedType: 'order',
         metadata: {
-          orderType: order.order_type,
+          order_id: order.order_id,
           orderNumber: order.orderNumber,
+          orderType: order.order_type,
           status,
           oldStatus
         }
@@ -676,16 +773,17 @@ exports.updateOrderStatus = async (req, res) => {
         await createNotification({
           userId: order.provider_id,
           title: 'Order Update',
-          message: `Order #${order.orderNumber || order._id} status updated to ${status}`,
+          message: `Order #${order.orderNumber || order.order_id || order._id} status updated to ${status}`,
           category: 'orders',
           type: notificationType,
           priority,
-          actionUrl: `/orders/${order._id}`,
+          actionUrl: `/(user)/(tabs)/orders`,
           relatedId: order._id,
           relatedType: 'order',
           metadata: {
-            orderType: order.order_type,
+            order_id: order.order_id,
             orderNumber: order.orderNumber,
+            orderType: order.order_type,
             status,
             oldStatus
           }

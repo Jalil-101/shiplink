@@ -1,6 +1,12 @@
-# 🚀 ShipLink - Logistics Mobile App
+# 🚀 ShipLink - Fullstack Logistics & Marketplace Platform
 
-A production-ready React Native mobile application for logistics and delivery services, built with Expo, TypeScript, and NativeWind. Features role-based authentication for users (importers) and drivers, real-time tracking, and a modern UI with full dark mode support.
+This repository contains the **entire ShipLink platform**:
+
+- **Mobile App** (`frontend/`) – React Native / Expo app for users, drivers, sellers, logistics companies, sourcing agents, and import coaches.
+- **Backend API** (`backend/`) – Node.js / Express / MongoDB API with Socket.io, deterministic order IDs, and notification system.
+- **Admin Dashboard** (`admin/`) – Next.js admin console for operations, verification, content, and analytics.
+
+For a full, end‑to‑end overview of features, architecture, IDs, notifications, and deployment, see **`PROJECT_SUMMARY.md`**.
 
 ---
 
@@ -20,11 +26,9 @@ A production-ready React Native mobile application for logistics and delivery se
 
 ---
 
-## 🎯 Project Overview
+## 🎯 Mobile App Overview
 
-ShipLink is a comprehensive logistics platform that connects:
-- **Users (Importers)**: Create delivery requests, track shipments, manage orders
-- **Drivers**: Accept delivery requests, manage deliveries, track earnings
+The mobile app is a production-ready React Native application for logistics and delivery services, built with Expo, TypeScript, and NativeWind. It features role-based authentication, real-time tracking, and a modern UI with full dark mode support.
 
 ### Key Capabilities
 
