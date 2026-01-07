@@ -216,8 +216,19 @@ async function createDeliveryOrder(userId, data) {
   const price = calculatePrice(distance, packageDetails.weight);
 
   // Determine provider
-  let providerId = null;
-  let providerModel = null;
+  let providerId = data.provider_id || null;
+  let providerModel = data.providerModel || null;
+  
+  // If provider_id is provided but no providerModel, check if it's a logistics company
+  if (providerId && !providerModel) {
+    const LogisticsCompany = require('../models/LogisticsCompany.model');
+    const company = await LogisticsCompany.findById(providerId);
+    if (company) {
+      providerModel = 'LogisticsCompany';
+    }
+  }
+  
+  // If driverId is provided, use driver as provider (takes precedence)
   if (driverId) {
     const driver = await Driver.findById(driverId);
     if (driver) {

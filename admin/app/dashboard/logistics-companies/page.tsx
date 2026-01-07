@@ -49,8 +49,10 @@ function LogisticsCompaniesPageContent() {
     companyName: '',
     registrationNumber: '',
     businessLicense: '',
+    logo: '',
     description: '',
   });
+  const [logoPreview, setLogoPreview] = useState<string>('');
 
   const columns = [
     columnHelper.accessor('companyName', {
@@ -333,8 +335,10 @@ function LogisticsCompaniesPageContent() {
                     companyName: '',
                     registrationNumber: '',
                     businessLicense: '',
+                    logo: '',
                     description: '',
                   });
+                  setLogoPreview('');
                 }}
                 className="text-gray-400 hover:text-gray-600"
               >
@@ -414,6 +418,55 @@ function LogisticsCompaniesPageContent() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
+                <div className="mt-2">
+                  {logoPreview ? (
+                    <div className="relative inline-block">
+                      <img
+                        src={logoPreview}
+                        alt="Logo preview"
+                        className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLogoPreview('');
+                          setEnrollForm({ ...enrollForm, logo: '' });
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const base64 = reader.result as string;
+                              setLogoPreview(base64);
+                              setEnrollForm({ ...enrollForm, logo: base64 });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary-500 transition-colors">
+                        <Truck className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-600">Click to upload logo</p>
+                        <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 2MB</p>
+                      </div>
+                    </label>
+                  )}
+                </div>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={enrollForm.description}
@@ -464,8 +517,10 @@ function LogisticsCompaniesPageContent() {
                     companyName: '',
                     registrationNumber: '',
                     businessLicense: '',
+                    logo: '',
                     description: '',
                   });
+                  setLogoPreview('');
                 }}
                 className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md font-medium hover:bg-gray-300"
               >

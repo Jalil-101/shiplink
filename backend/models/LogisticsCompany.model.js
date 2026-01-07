@@ -27,6 +27,10 @@ const logisticsCompanySchema = new mongoose.Schema({
     type: String, // URL or base64
     default: null
   },
+  logo: {
+    type: String, // URL or base64
+    default: null
+  },
   description: {
     type: String,
     default: null
