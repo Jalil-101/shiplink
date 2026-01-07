@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs');
 const roleEntrySchema = new mongoose.Schema({
   role: {
     type: String,
-    enum: ['user', 'seller', 'driver', 'import-coach', 'sourcing-agent'],
+    enum: ['user', 'seller', 'driver', 'import-coach', 'sourcing-agent', 'logistics-company'],
     required: true
   },
   verified: {

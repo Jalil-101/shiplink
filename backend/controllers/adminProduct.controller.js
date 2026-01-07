@@ -128,7 +128,8 @@ exports.createProduct = async (req, res) => {
       weight: weight || 0.5,
       dimensions: dimensions || { length: 10, width: 10, height: 10 },
       isFeatured: isFeatured || false,
-      createdBy: req.admin._id
+      createdBy: req.admin._id,
+      createdByType: 'AdminUser'
     });
 
     await createAuditLog(
@@ -151,9 +152,27 @@ exports.createProduct = async (req, res) => {
     });
   } catch (error) {
     console.error('Create product error:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: errors.join(', ')
+      });
+    }
+    
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      return res.status(400).json({
+        error: 'Duplicate Error',
+        message: 'A product with this SKU already exists'
+      });
+    }
+    
     res.status(500).json({
       error: 'Server Error',
-      message: 'Error creating product'
+      message: error.message || 'Error creating product'
     });
   }
 };
@@ -206,6 +225,7 @@ exports.updateProduct = async (req, res) => {
     if (isFeatured !== undefined) product.isFeatured = isFeatured;
     
     product.updatedBy = req.admin._id;
+    product.updatedByType = 'AdminUser';
     
     await product.save();
 

@@ -106,3 +106,4 @@ To test the fix:
 3. Try to access user features (shipment tracking, profile stats)
 4. Should work seamlessly or show helpful prompt to switch roles
 
+

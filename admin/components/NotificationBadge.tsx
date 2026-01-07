@@ -22,3 +22,4 @@ export default function NotificationBadge({ count, maxCount = 99, className = ''
   );
 }
 
+

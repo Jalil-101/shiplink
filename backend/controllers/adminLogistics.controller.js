@@ -315,9 +315,36 @@ exports.enrollCompany = async (req, res) => {
     });
   } catch (error) {
     console.error('Enroll logistics company error:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: errors.join(', ')
+      });
+    }
+    
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        error: 'Duplicate Error',
+        message: `A ${field === 'email' ? 'user' : 'company'} with this ${field} already exists`
+      });
+    }
+    
+    // Handle mongoose cast errors
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'Invalid Data',
+        message: `Invalid ${error.path}: ${error.value}`
+      });
+    }
+    
     res.status(500).json({
       error: 'Server Error',
-      message: 'Error enrolling logistics company'
+      message: error.message || 'Error enrolling logistics company'
     });
   }
 };
