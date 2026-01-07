@@ -57,13 +57,30 @@ exports.getAllProducts = async (req, res) => {
  */
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
+    const productId = req.params.id;
+    
+    // Validate ObjectId format
+    if (!productId || !/^[0-9a-fA-F]{24}$/.test(productId)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid product ID format'
+      });
+    }
+
+    const product = await Product.findById(productId)
       .select('name description price category images stock isFeatured weight dimensions createdAt');
 
-    if (!product || !product.isActive) {
+    if (!product) {
       return res.status(404).json({
         error: 'Not Found',
         message: 'Product not found'
+      });
+    }
+
+    if (!product.isActive) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Product not available'
       });
     }
 
@@ -72,6 +89,15 @@ exports.getProductById = async (req, res) => {
     });
   } catch (error) {
     console.error('Get product by ID error:', error);
+    
+    // Handle cast errors (invalid ObjectId)
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid product ID format'
+      });
+    }
+    
     res.status(500).json({
       error: 'Server Error',
       message: 'Error fetching product'
