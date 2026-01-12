@@ -252,16 +252,18 @@ exports.enrollCompany = async (req, res) => {
     }
 
     // Create user account with logistics-company role
+    // NOTE: These accounts are for web dashboard access only, not mobile app
+    // activeRole must be 'user' - logistics companies cannot use mobile app
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
       phone: phone.trim(),
       password,
       role: 'logistics-company',
-      activeRole: 'user', // Start as user, can switch later
+      activeRole: 'user', // Must be 'user' - logistics companies use web dashboard only
       roles: [
         { role: 'user', verified: true, verifiedAt: new Date() },
-        { role: 'logistics-company', verified: true, verifiedAt: new Date() }
+        { role: 'logistics-company', verified: true, verifiedAt: new Date() } // For web dashboard authentication
       ]
     });
 

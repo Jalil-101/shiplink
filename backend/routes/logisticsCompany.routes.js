@@ -12,10 +12,10 @@ const logisticsDashboardController = require('../controllers/logisticsDashboard.
 // Public routes
 router.get('/', logisticsCompanyController.getAllCompanies);
 
-// Protected routes (logistics-company role)
-router.post('/create-profile', protect, logisticsCompanyController.createProfile);
-router.get('/profile', protect, logisticsCompanyController.getProfile);
-router.patch('/profile', protect, logisticsCompanyController.updateProfile);
+// Protected routes (logistics-company role only - web dashboard access)
+router.post('/create-profile', protect, restrictToLogisticsCompany, logisticsCompanyController.createProfile);
+router.get('/profile', protect, restrictToLogisticsCompany, logisticsCompanyController.getProfile);
+router.patch('/profile', protect, restrictToLogisticsCompany, logisticsCompanyController.updateProfile);
 
 // Dashboard routes (logistics-company role only)
 router.get('/dashboard/overview', protect, restrictToLogisticsCompany, logisticsDashboardController.getOverview);

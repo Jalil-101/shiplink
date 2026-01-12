@@ -53,6 +53,8 @@ function LogisticsCompaniesPageContent() {
     description: '',
   });
   const [logoPreview, setLogoPreview] = useState<string>('');
+  const [showCredentialsModal, setShowCredentialsModal] = useState(false);
+  const [enrolledCredentials, setEnrolledCredentials] = useState<{email: string; password: string; companyName: string} | null>(null);
 
   const columns = [
     columnHelper.accessor('companyName', {
@@ -484,9 +486,17 @@ function LogisticsCompaniesPageContent() {
                     return;
                   }
                   try {
-                    await api.post('/logistics-companies/enroll', enrollForm);
-                    alert('Company enrolled successfully');
+                    const response = await api.post('/logistics-companies/enroll', enrollForm);
+                    // Store credentials to display
+                    setEnrolledCredentials({
+                      email: enrollForm.email,
+                      password: enrollForm.password,
+                      companyName: enrollForm.companyName,
+                    });
+                    // Close enrollment modal and show credentials modal
                     setShowEnrollModal(false);
+                    setShowCredentialsModal(true);
+                    // Reset form
                     setEnrollForm({
                       name: '',
                       email: '',
@@ -580,6 +590,92 @@ function LogisticsCompaniesPageContent() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Credentials Display Modal */}
+      {showCredentialsModal && enrolledCredentials && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Company Enrolled Successfully</h3>
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 mb-4">
+                <strong className="font-semibold text-gray-900">{enrolledCredentials.companyName}</strong> has been enrolled successfully.
+                <br />
+                Please provide these credentials to the company for web dashboard access:
+              </p>
+              
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-purple-700 mb-1">Email Address</label>
+                    <div className="flex items-center justify-between bg-white px-3 py-2 rounded border border-purple-200">
+                      <code className="text-sm font-mono text-gray-900">{enrolledCredentials.email}</code>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(enrolledCredentials.email);
+                          alert('Email copied to clipboard');
+                        }}
+                        className="ml-2 text-purple-600 hover:text-purple-700 text-sm font-medium"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-purple-700 mb-1">Password</label>
+                    <div className="flex items-center justify-between bg-white px-3 py-2 rounded border border-purple-200">
+                      <code className="text-sm font-mono text-gray-900">{enrolledCredentials.password}</code>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(enrolledCredentials.password);
+                          alert('Password copied to clipboard');
+                        }}
+                        className="ml-2 text-purple-600 hover:text-purple-700 text-sm font-medium"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-purple-700 mb-1">Web Dashboard URL</label>
+                    <div className="flex items-center justify-between bg-white px-3 py-2 rounded border border-purple-200">
+                      <code className="text-sm font-mono text-gray-900">
+                        {typeof window !== 'undefined' ? window.location.origin : ''}/logistics-login
+                      </code>
+                      <button
+                        onClick={() => {
+                          const url = typeof window !== 'undefined' ? `${window.location.origin}/logistics-login` : '';
+                          navigator.clipboard.writeText(url);
+                          alert('URL copied to clipboard');
+                        }}
+                        className="ml-2 text-purple-600 hover:text-purple-700 text-sm font-medium"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-xs text-yellow-800">
+                  <strong className="font-semibold">Important:</strong> These credentials are for web dashboard access only. 
+                  The company can log in at the provided URL to manage their logistics operations. 
+                  They cannot use the mobile app with these credentials.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setShowCredentialsModal(false);
+                setEnrolledCredentials(null);
+              }}
+              className="w-full px-4 py-2 bg-primary-600 text-white rounded-md font-medium hover:bg-primary-700"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

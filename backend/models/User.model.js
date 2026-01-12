@@ -76,7 +76,7 @@ const userSchema = new mongoose.Schema({
   },
   activeRole: {
     type: String,
-    enum: ['user', 'seller', 'driver', 'import-coach', 'sourcing-agent'],
+    enum: ['user', 'seller', 'driver', 'import-coach', 'sourcing-agent'], // logistics-company removed - web dashboard only
     default: 'user',
     required: true
   },

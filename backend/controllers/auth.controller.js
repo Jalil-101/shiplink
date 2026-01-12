@@ -165,6 +165,7 @@ exports.login = async (req, res, next) => {
     // Transform role for frontend compatibility
     const responseRole = user.role === 'user' ? 'customer' : user.role;
 
+    // Include roles array and activeRole for multi-role support (especially for logistics companies)
     res.json({
       message: 'Login successful',
       user: {
@@ -172,7 +173,9 @@ exports.login = async (req, res, next) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: responseRole, // Return "customer" for frontend
+        role: responseRole, // Return "customer" for frontend (legacy field)
+        roles: user.roles || [], // Include roles array for multi-role support
+        activeRole: user.activeRole || responseRole, // Include activeRole
         avatar: user.avatar
       },
       token

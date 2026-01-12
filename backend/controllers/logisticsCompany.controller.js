@@ -89,7 +89,7 @@ exports.getProfile = async (req, res) => {
       });
     }
 
-    res.json({ profile });
+    res.json({ company: profile }); // Return as 'company' for consistency with frontend expectations
   } catch (error) {
     console.error('Get logistics company profile error:', error);
     res.status(500).json({
@@ -116,15 +116,44 @@ exports.updateProfile = async (req, res) => {
       });
     }
 
-    Object.assign(profile, req.body);
+    // Only allow updating specific fields (prevent updating protected fields like verificationStatus, isActive, etc.)
+    const allowedFields = ['companyName', 'description', 'services', 'coverageAreas', 'contactInfo', 'pricing', 'logo'];
+    const updates = {};
+    
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+
+    // Handle nested contactInfo
+    if (req.body.contactInfo && typeof req.body.contactInfo === 'object') {
+      profile.contactInfo = {
+        ...profile.contactInfo,
+        ...req.body.contactInfo
+      };
+    }
+
+    // Apply allowed updates
+    Object.assign(profile, updates);
     await profile.save();
 
     res.json({
       message: 'Profile updated successfully',
-      profile
+      company: profile
     });
   } catch (error) {
     console.error('Update logistics company profile error:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: errors.join(', ')
+      });
+    }
+    
     res.status(500).json({
       error: 'Server Error',
       message: 'Error updating profile'
