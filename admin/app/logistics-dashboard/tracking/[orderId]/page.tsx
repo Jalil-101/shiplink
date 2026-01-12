@@ -114,7 +114,7 @@ export default function OrderTrackingPage() {
     : null;
 
   // Generate Google Maps URL for route visualization
-  const getMapUrl = () => {
+  const getMapUrl = (): string | undefined => {
     const waypoints = [];
     if (order.pickupLocation?.latitude && order.pickupLocation?.longitude) {
       waypoints.push(`${order.pickupLocation.latitude},${order.pickupLocation.longitude}`);
@@ -129,7 +129,7 @@ export default function OrderTrackingPage() {
     if (waypoints.length >= 2) {
       return `https://www.google.com/maps/dir/${waypoints.join('/')}`;
     }
-    return null;
+    return undefined;
   };
 
   return (
@@ -150,19 +150,22 @@ export default function OrderTrackingPage() {
       </div>
 
       {/* Map Link */}
-      {getMapUrl() && (
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <a
-            href={getMapUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-          >
-            <Navigation className="h-5 w-5 mr-2" />
-            View Route on Google Maps
-          </a>
-        </div>
-      )}
+      {(() => {
+        const mapUrl = getMapUrl();
+        return mapUrl ? (
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <a
+              href={mapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            >
+              <Navigation className="h-5 w-5 mr-2" />
+              View Route on Google Maps
+            </a>
+          </div>
+        ) : null;
+      })()}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
