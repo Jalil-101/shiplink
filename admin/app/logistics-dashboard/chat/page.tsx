@@ -9,6 +9,7 @@ import { MessageSquare, Package, Clock, User } from 'lucide-react';
 interface Chat {
   _id: string;
   orderId: {
+    _id?: string;
     orderNumber: string;
     order_id: string;
     status: string;
