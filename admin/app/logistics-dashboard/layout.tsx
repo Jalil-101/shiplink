@@ -16,6 +16,7 @@ import {
   X,
   Truck,
   DollarSign,
+  MessageSquare,
 } from 'lucide-react';
 
 const navigation = [
