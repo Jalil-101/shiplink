@@ -196,7 +196,7 @@ exports.getOrders = async (req, res) => {
     }
 
     // Sorting
-    const sortOptions: any = {};
+    const sortOptions = {};
     const validSortFields = ['createdAt', 'gross_amount', 'status', 'orderNumber'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
     sortOptions[sortField] = sortOrder === 'asc' ? 1 : -1;
