@@ -180,18 +180,20 @@ exports.sendMessage = async (req, res) => {
       const { getIO } = require('../socket');
       const io = getIO();
       
+      const lastMessage = chat.messages[chat.messages.length - 1];
+      
       // Emit to company
-      io.to(`company:${companyId}`).emit('chat:message', {
-        chatId: chat._id,
-        orderId,
-        message: chat.messages[chat.messages.length - 1]
+      io.to(`company:${companyId.toString()}`).emit('chat:message', {
+        chatId: chat._id.toString(),
+        orderId: orderMongoId.toString(),
+        message: lastMessage
       });
       
       // Emit to user
-      io.to(`user:${userId}`).emit('chat:message', {
-        chatId: chat._id,
-        orderId,
-        message: chat.messages[chat.messages.length - 1]
+      io.to(`user:${userId.toString()}`).emit('chat:message', {
+        chatId: chat._id.toString(),
+        orderId: orderMongoId.toString(),
+        message: lastMessage
       });
     } catch (socketError) {
       console.error('Error emitting chat message:', socketError);
@@ -487,18 +489,19 @@ exports.sendCompanyMessage = async (req, res) => {
       const { getIO } = require('../socket');
       const io = getIO();
       const lastMessage = chat.messages[chat.messages.length - 1];
+      const orderMongoId = order._id;
       
       // Emit to user
-      io.to(`user:${order.userId}`).emit('chat:message', {
+      io.to(`user:${order.userId.toString()}`).emit('chat:message', {
         chatId: chat._id.toString(),
-        orderId: orderId.toString(),
+        orderId: orderMongoId.toString(),
         message: lastMessage
       });
       
       // Emit to company
       io.to(`company:${company._id.toString()}`).emit('chat:message', {
         chatId: chat._id.toString(),
-        orderId: orderId.toString(),
+        orderId: orderMongoId.toString(),
         message: lastMessage
       });
     } catch (socketError) {
