@@ -72,7 +72,7 @@ export default function ChatPage() {
   // Join company room when socket and chat are ready
   useEffect(() => {
     if (socket && chat?.companyId?._id) {
-      socket.emit('join:company', chat.companyId._id);
+      socket.emit('join:company', chat.companyId._id.toString());
     }
   }, [socket, chat?.companyId?._id]);
 
