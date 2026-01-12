@@ -142,6 +142,32 @@ const orderSchema = new mongoose.Schema({
     type: [statusHistoryEntrySchema],
     default: []
   },
+  trackingHistory: [{
+    latitude: {
+      type: Number,
+      required: true
+    },
+    longitude: {
+      type: Number,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    status: {
+      type: String,
+      default: null
+    },
+    carrier: {
+      type: String,
+      default: null
+    },
+    notes: {
+      type: String,
+      default: null
+    }
+  }],
   
   // Payment status
   paymentStatus: {
@@ -234,6 +260,34 @@ const orderSchema = new mongoose.Schema({
   assignedAt: {
     type: Date,
     default: null
+  },
+  scheduledPickup: {
+    date: {
+      type: Date,
+      default: null
+    },
+    time: {
+      type: String,
+      default: null
+    },
+    notes: {
+      type: String,
+      default: null
+    }
+  },
+  scheduledDelivery: {
+    date: {
+      type: Date,
+      default: null
+    },
+    time: {
+      type: String,
+      default: null
+    },
+    notes: {
+      type: String,
+      default: null
+    }
   },
   
   // ===== MARKETPLACE-SPECIFIC FIELDS (when order_type === 'marketplace') =====

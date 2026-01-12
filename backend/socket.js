@@ -23,6 +23,12 @@ function initializeSocket(server) {
       console.log(`User ${userId} joined their room`);
     });
 
+    // Join company room for logistics companies
+    socket.on('join:company', (companyId) => {
+      socket.join(`company:${companyId}`);
+      console.log(`Company ${companyId} joined their room`);
+    });
+
     // Join admin room
     socket.on('join:admin', () => {
       socket.join('admin');

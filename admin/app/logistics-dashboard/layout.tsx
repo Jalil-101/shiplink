@@ -15,11 +15,17 @@ import {
   Menu,
   X,
   Truck,
+  DollarSign,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Overview', href: '/logistics-dashboard', icon: LayoutDashboard },
   { name: 'Orders', href: '/logistics-dashboard/orders', icon: Package },
+  { name: 'Tracking', href: '/logistics-dashboard/tracking', icon: Truck },
+  { name: 'Chat', href: '/logistics-dashboard/chat', icon: MessageSquare },
+  { name: 'Returns', href: '/logistics-dashboard/returns', icon: Package },
+  { name: 'Quotes', href: '/logistics-dashboard/quotes', icon: Package },
+  { name: 'Billing', href: '/logistics-dashboard/billing', icon: DollarSign },
   { name: 'Drivers', href: '/logistics-dashboard/drivers', icon: Truck },
   { name: 'Analytics', href: '/logistics-dashboard/analytics', icon: BarChart3 },
   { name: 'Profile', href: '/logistics-dashboard/profile', icon: Settings },

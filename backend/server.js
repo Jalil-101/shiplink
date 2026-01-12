@@ -25,12 +25,14 @@ const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const logisticsCompanyRoutes = require('./routes/logisticsCompany.routes');
+const logisticsTrackingRoutes = require('./routes/logisticsTracking.routes');
 const sourcingAgentRoutes = require('./routes/sourcingAgent.routes');
 const importCoachRoutes = require('./routes/importCoach.routes');
 const sellerRoutes = require('./routes/seller.routes');
 const roleRoutes = require('./routes/role.routes');
 const uploadRoutes = require('./routes/upload.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const chatRoutes = require('./routes/chat.routes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -93,12 +95,14 @@ app.use('/api/cart', cartRoutes); // Cart (protected)
 app.use('/api/orders', orderRoutes); // Orders (protected)
 app.use('/api/settings', settingsRoutes); // Public settings
 app.use('/api/logistics-companies', logisticsCompanyRoutes); // Logistics companies
+app.use('/api/logistics-companies/dashboard/tracking', logisticsTrackingRoutes); // Logistics tracking
 app.use('/api/sourcing-agents', sourcingAgentRoutes); // Sourcing agents
 app.use('/api/import-coaches', importCoachRoutes); // Import coaches
 app.use('/api/sellers', sellerRoutes); // Sellers
 app.use('/api/roles', roleRoutes); // Role switching and management
 app.use('/api/upload', uploadLimiter, uploadRoutes); // File uploads with rate limiting
 app.use('/api/notifications', notificationRoutes); // User notifications
+app.use('/api/chat', chatRoutes); // Chat (user routes)
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import logisticsApi from '@/lib/logisticsApi';
-import { Package, Clock, CheckCircle, Truck, XCircle } from 'lucide-react';
+import { Package, Clock, CheckCircle, Truck, XCircle, Search, Filter, Calendar } from 'lucide-react';
 
 interface Order {
   _id: string;
@@ -23,13 +23,26 @@ interface Order {
 
 export default function LogisticsOrdersPage() {
   const router = useRouter();
+  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    status: searchParams.get('status') || '',
+    order_type: '',
+    destination: '',
+    startDate: '',
+    endDate: '',
+    carrier: '',
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [filters]);
 
   const fetchOrders = async () => {
     try {
@@ -42,9 +55,18 @@ export default function LogisticsOrdersPage() {
         return;
       }
 
-      const response = await logisticsApi.get('/logistics-companies/dashboard/orders', {
-        params: { limit: 50 }
-      });
+      const params: any = { limit: 50 };
+      if (searchQuery) params.search = searchQuery;
+      if (filters.status) params.status = filters.status;
+      if (filters.order_type) params.order_type = filters.order_type;
+      if (filters.destination) params.destination = filters.destination;
+      if (filters.startDate) params.startDate = filters.startDate;
+      if (filters.endDate) params.endDate = filters.endDate;
+      if (filters.carrier) params.carrier = filters.carrier;
+      if (filters.sortBy) params.sortBy = filters.sortBy;
+      if (filters.sortOrder) params.sortOrder = filters.sortOrder;
+
+      const response = await logisticsApi.get('/logistics-companies/dashboard/orders', { params });
 
       setOrders(response.data.orders || []);
     } catch (err: any) {
@@ -53,6 +75,11 @@ export default function LogisticsOrdersPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchOrders();
   };
 
   const getStatusConfig = (status: string) => {
@@ -84,9 +111,137 @@ export default function LogisticsOrdersPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-        <p className="mt-1 text-sm text-gray-500">View and manage booking requests</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
+          <p className="mt-1 text-sm text-gray-500">View and manage booking requests</p>
+        </div>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <form onSubmit={handleSearch} className="mb-4">
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by Order ID, Tracking ID, or Order Number..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              Search
+            </button>
+          </div>
+        </form>
+
+        {showFilters && (
+          <div className="border-t border-gray-200 pt-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="created">Created</option>
+                  <option value="provider_assigned">Assigned</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+                <input
+                  type="text"
+                  value={filters.destination}
+                  onChange={(e) => setFilters({ ...filters, destination: e.target.value })}
+                  placeholder="City or Country"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <input
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <input
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+                >
+                  <option value="createdAt">Date Created</option>
+                  <option value="gross_amount">Amount</option>
+                  <option value="status">Status</option>
+                  <option value="orderNumber">Order Number</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+                <select
+                  value={filters.sortOrder}
+                  onChange={(e) => setFilters({ ...filters, sortOrder: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
+                >
+                  <option value="desc">Descending</option>
+                  <option value="asc">Ascending</option>
+                </select>
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={() => {
+                    setFilters({
+                      status: '',
+                      order_type: '',
+                      destination: '',
+                      startDate: '',
+                      endDate: '',
+                      carrier: '',
+                      sortBy: 'createdAt',
+                      sortOrder: 'desc'
+                    });
+                    setSearchQuery('');
+                  }}
+                  className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {orders.length === 0 ? (
@@ -128,7 +283,11 @@ export default function LogisticsOrdersPage() {
                   const orderId = order.orderNumber || order.order_id || order._id;
 
                   return (
-                    <tr key={order._id} className="hover:bg-gray-50 cursor-pointer">
+                    <tr 
+                      key={order._id} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => router.push(`/logistics-dashboard/orders/${order._id}`)}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {orderId}
                       </td>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
-import { Package, Users, DollarSign, Truck } from 'lucide-react';
+import { Package, Users, DollarSign, Truck, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import logisticsApi from '@/lib/logisticsApi';
 
 interface DashboardStats {
@@ -11,6 +11,14 @@ interface DashboardStats {
   activeDrivers: number;
   totalRevenue: number;
   pendingDeliveries: number;
+  statusBreakdown?: {
+    created: number;
+    assigned: number;
+    inProgress: number;
+    completed: number;
+    cancelled: number;
+    failed: number;
+  };
 }
 
 export default function LogisticsDashboardOverview() {
@@ -47,7 +55,15 @@ export default function LogisticsDashboardOverview() {
         totalShipments: overview.orders?.total || 0,
         activeDrivers: overview.drivers?.active || 0,
         totalRevenue: overview.revenue?.total || 0,
-        pendingDeliveries: overview.orders?.pending || 0,
+        pendingDeliveries: (overview.orders?.byStatus?.created || 0) + (overview.orders?.byStatus?.assigned || 0),
+        statusBreakdown: overview.orders?.byStatus || {
+          created: 0,
+          assigned: 0,
+          inProgress: 0,
+          completed: 0,
+          cancelled: 0,
+          failed: 0
+        }
       });
     } catch (err: any) {
       console.error('Error fetching dashboard data:', err);
@@ -115,7 +131,76 @@ export default function LogisticsDashboardOverview() {
         </div>
       </div>
 
-      {/* Additional content can be added here */}
+      {/* Shipment Status Breakdown */}
+      {stats.statusBreakdown && (
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Shipment Status Overview</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <button
+              onClick={() => router.push('/logistics-dashboard/orders?status=created')}
+              className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 text-left transition-colors"
+            >
+              <div className="flex items-center mb-2">
+                <Clock className="h-5 w-5 text-blue-600 mr-2" />
+                <span className="text-sm font-medium text-gray-700">Created</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.created}</p>
+            </button>
+            <button
+              onClick={() => router.push('/logistics-dashboard/orders?status=provider_assigned')}
+              className="p-4 border border-indigo-200 rounded-lg hover:bg-indigo-50 text-left transition-colors"
+            >
+              <div className="flex items-center mb-2">
+                <Package className="h-5 w-5 text-indigo-600 mr-2" />
+                <span className="text-sm font-medium text-gray-700">Assigned</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.assigned}</p>
+            </button>
+            <button
+              onClick={() => router.push('/logistics-dashboard/orders?status=in_progress')}
+              className="p-4 border border-purple-200 rounded-lg hover:bg-purple-50 text-left transition-colors"
+            >
+              <div className="flex items-center mb-2">
+                <Truck className="h-5 w-5 text-purple-600 mr-2" />
+                <span className="text-sm font-medium text-gray-700">In Progress</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.inProgress}</p>
+            </button>
+            <button
+              onClick={() => router.push('/logistics-dashboard/orders?status=completed')}
+              className="p-4 border border-green-200 rounded-lg hover:bg-green-50 text-left transition-colors"
+            >
+              <div className="flex items-center mb-2">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                <span className="text-sm font-medium text-gray-700">Completed</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.completed}</p>
+            </button>
+            <button
+              onClick={() => router.push('/logistics-dashboard/orders?status=cancelled')}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
+            >
+              <div className="flex items-center mb-2">
+                <XCircle className="h-5 w-5 text-gray-600 mr-2" />
+                <span className="text-sm font-medium text-gray-700">Cancelled</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.cancelled}</p>
+            </button>
+            <button
+              onClick={() => router.push('/logistics-dashboard/orders?status=failed')}
+              className="p-4 border border-red-200 rounded-lg hover:bg-red-50 text-left transition-colors"
+            >
+              <div className="flex items-center mb-2">
+                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+                <span className="text-sm font-medium text-gray-700">Failed</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.failed}</p>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

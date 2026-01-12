@@ -28,7 +28,12 @@
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "nodemailer": "^6.9.8",
+    "twilio": "^5.0.4",
+    "qrcode": "^1.5.3",
+    "jsbarcode": "^3.11.5",
+    "canvas": "^2.11.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
