@@ -18,13 +18,29 @@ exports.getOrCreateChat = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const { orderId } = req.params;
 
-    // Verify order belongs to user
-    const order = await Order.findOne({
-      _id: orderId,
+    // Check if orderId is a valid MongoDB ObjectId
+    const mongoose = require('mongoose');
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(orderId);
+    
+    // Build query to find order by _id, order_id, or orderNumber
+    const orderQuery = {
       userId,
       providerModel: 'LogisticsCompany',
       softDelete: false
-    }).populate('provider_id');
+    };
+
+    if (isValidObjectId) {
+      orderQuery._id = orderId;
+    } else {
+      // If not a valid ObjectId, search by order_id or orderNumber
+      orderQuery.$or = [
+        { order_id: orderId },
+        { orderNumber: orderId }
+      ];
+    }
+
+    // Verify order belongs to user
+    const order = await Order.findOne(orderQuery).populate('provider_id');
 
     if (!order) {
       return res.status(404).json({
@@ -43,9 +59,11 @@ exports.getOrCreateChat = async (req, res) => {
       });
     }
 
-    // Get or create chat
+    // Get or create chat - use order._id (MongoDB ObjectId) for chat.orderId
+    const orderMongoId = order._id;
+    
     let chat = await Chat.findOne({
-      orderId,
+      orderId: orderMongoId,
       userId,
       companyId
     })
@@ -54,7 +72,7 @@ exports.getOrCreateChat = async (req, res) => {
 
     if (!chat) {
       chat = await Chat.create({
-        orderId,
+        orderId: orderMongoId,
         userId,
         companyId
       });
@@ -91,13 +109,29 @@ exports.sendMessage = async (req, res) => {
       });
     }
 
-    // Verify order belongs to user
-    const order = await Order.findOne({
-      _id: orderId,
+    // Check if orderId is a valid MongoDB ObjectId
+    const mongoose = require('mongoose');
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(orderId);
+    
+    // Build query to find order by _id, order_id, or orderNumber
+    const orderQuery = {
       userId,
       providerModel: 'LogisticsCompany',
       softDelete: false
-    });
+    };
+
+    if (isValidObjectId) {
+      orderQuery._id = orderId;
+    } else {
+      // If not a valid ObjectId, search by order_id or orderNumber
+      orderQuery.$or = [
+        { order_id: orderId },
+        { orderNumber: orderId }
+      ];
+    }
+
+    // Verify order belongs to user
+    const order = await Order.findOne(orderQuery);
 
     if (!order) {
       return res.status(404).json({
@@ -106,16 +140,28 @@ exports.sendMessage = async (req, res) => {
       });
     }
 
-    // Get or create chat
+    // Ensure provider_id is an ObjectId
+    const companyId = order.provider_id?._id || order.provider_id;
+
+    if (!companyId) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Order does not have an assigned logistics company'
+      });
+    }
+
+    // Get or create chat - use order._id (MongoDB ObjectId) for chat.orderId
+    const orderMongoId = order._id;
+    
     let chat = await Chat.findOne({
-      orderId,
+      orderId: orderMongoId,
       userId,
-      companyId: order.provider_id
+      companyId
     });
 
     if (!chat) {
       chat = await Chat.create({
-        orderId,
+        orderId: orderMongoId,
         userId,
         companyId
       });
@@ -290,13 +336,29 @@ exports.getCompanyChat = async (req, res) => {
       });
     }
 
-    // Verify order belongs to company
-    const order = await Order.findOne({
-      _id: orderId,
+    // Check if orderId is a valid MongoDB ObjectId
+    const mongoose = require('mongoose');
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(orderId);
+    
+    // Build query to find order by _id, order_id, or orderNumber
+    const orderQuery = {
       provider_id: company._id,
       providerModel: 'LogisticsCompany',
       softDelete: false
-    });
+    };
+
+    if (isValidObjectId) {
+      orderQuery._id = orderId;
+    } else {
+      // If not a valid ObjectId, search by order_id or orderNumber
+      orderQuery.$or = [
+        { order_id: orderId },
+        { orderNumber: orderId }
+      ];
+    }
+
+    // Verify order belongs to company
+    const order = await Order.findOne(orderQuery);
 
     if (!order) {
       return res.status(404).json({
@@ -305,9 +367,11 @@ exports.getCompanyChat = async (req, res) => {
       });
     }
 
-    // Get or create chat
+    // Get or create chat - use order._id (MongoDB ObjectId) for chat.orderId
+    const orderMongoId = order._id;
+    
     let chat = await Chat.findOne({
-      orderId,
+      orderId: orderMongoId,
       userId: order.userId,
       companyId: company._id
     })
@@ -316,7 +380,7 @@ exports.getCompanyChat = async (req, res) => {
 
     if (!chat) {
       chat = await Chat.create({
-        orderId,
+        orderId: orderMongoId,
         userId: order.userId,
         companyId: company._id
       });
@@ -362,13 +426,29 @@ exports.sendCompanyMessage = async (req, res) => {
       });
     }
 
-    // Verify order belongs to company
-    const order = await Order.findOne({
-      _id: orderId,
+    // Check if orderId is a valid MongoDB ObjectId
+    const mongoose = require('mongoose');
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(orderId);
+    
+    // Build query to find order by _id, order_id, or orderNumber
+    const orderQuery = {
       provider_id: company._id,
       providerModel: 'LogisticsCompany',
       softDelete: false
-    });
+    };
+
+    if (isValidObjectId) {
+      orderQuery._id = orderId;
+    } else {
+      // If not a valid ObjectId, search by order_id or orderNumber
+      orderQuery.$or = [
+        { order_id: orderId },
+        { orderNumber: orderId }
+      ];
+    }
+
+    // Verify order belongs to company
+    const order = await Order.findOne(orderQuery);
 
     if (!order) {
       return res.status(404).json({
@@ -377,16 +457,18 @@ exports.sendCompanyMessage = async (req, res) => {
       });
     }
 
-    // Get or create chat
+    // Get or create chat - use order._id (MongoDB ObjectId) for chat.orderId
+    const orderMongoId = order._id;
+    
     let chat = await Chat.findOne({
-      orderId,
+      orderId: orderMongoId,
       userId: order.userId,
       companyId: company._id
     });
 
     if (!chat) {
       chat = await Chat.create({
-        orderId,
+        orderId: orderMongoId,
         userId: order.userId,
         companyId: company._id
       });
