@@ -29,6 +29,7 @@ interface Chat {
     phone: string;
   };
   companyId: {
+    _id: string;
     companyName: string;
     logo?: string;
   };
