@@ -84,9 +84,16 @@ exports.getOrCreateChat = async (req, res) => {
     res.json({ chat });
   } catch (error) {
     console.error('Get or create chat error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      orderId: req.params.orderId,
+      userId: req.user._id || req.user.id
+    });
     res.status(500).json({
       error: 'Server Error',
-      message: 'Error fetching chat'
+      message: 'Error fetching chat',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
