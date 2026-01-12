@@ -119,8 +119,7 @@ export default function ChatConversationsPage() {
                 <MessageSquare className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
               </div>
             </div>
-            );
-          })}
+          ))}
         </div>
       )}
     </div>
