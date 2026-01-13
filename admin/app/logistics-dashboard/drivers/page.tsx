@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import logisticsApi from '@/lib/logisticsApi';
-import { Users, Truck, Package, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Truck, Package, CheckCircle, XCircle, Search, Filter } from 'lucide-react';
 
 interface Driver {
   _id: string;
@@ -12,12 +12,15 @@ interface Driver {
     name: string;
     email: string;
     phone: string;
+    avatar?: string;
   };
   vehicleType: string;
   vehicleModel: string;
   vehiclePlate: string;
-  isActive: boolean;
-  totalDeliveries: number;
+  isAvailable: boolean;
+  isAssignedToCompany?: boolean;
+  verificationStatus?: string;
+  totalDeliveries?: number;
   rating?: number;
 }
 
@@ -26,10 +29,12 @@ export default function LogisticsDriversPage() {
   const [loading, setLoading] = useState(true);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [filterAvailable, setFilterAvailable] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     fetchDrivers();
-  }, []);
+  }, [filterAvailable]);
 
   const fetchDrivers = async () => {
     try {
@@ -42,7 +47,11 @@ export default function LogisticsDriversPage() {
         return;
       }
 
-      const response = await logisticsApi.get('/logistics-companies/dashboard/drivers');
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (filterAvailable !== undefined) params.append('isAvailable', filterAvailable.toString());
+
+      const response = await logisticsApi.get(`/logistics-companies/dashboard/drivers?${params.toString()}`);
       setDrivers(response.data.drivers || []);
     } catch (err: any) {
       console.error('Error fetching drivers:', err);
@@ -50,6 +59,10 @@ export default function LogisticsDriversPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = () => {
+    fetchDrivers();
   };
 
   if (loading) {

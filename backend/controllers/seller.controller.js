@@ -195,7 +195,11 @@ exports.getMyProducts = async (req, res) => {
       });
     }
 
-    const products = await Product.find({ sellerId: seller._id })
+    // Only return products created by this seller (double-check with both sellerId and createdByType)
+    const products = await Product.find({ 
+      sellerId: seller._id,
+      createdByType: 'Seller' // Ensure only seller-created products are returned
+    })
       .sort({ createdAt: -1 });
 
     res.json({
@@ -299,7 +303,8 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    if (product.sellerId.toString() !== seller._id.toString()) {
+    // Double-check ownership: must be seller's product AND created by seller (not admin)
+    if (product.sellerId.toString() !== seller._id.toString() || product.createdByType !== 'Seller') {
       return res.status(403).json({
         error: 'Forbidden',
         message: 'You can only update your own products'
@@ -347,7 +352,8 @@ exports.deleteProduct = async (req, res) => {
       });
     }
 
-    if (product.sellerId.toString() !== seller._id.toString()) {
+    // Double-check ownership: must be seller's product AND created by seller (not admin)
+    if (product.sellerId.toString() !== seller._id.toString() || product.createdByType !== 'Seller') {
       return res.status(403).json({
         error: 'Forbidden',
         message: 'You can only delete your own products'

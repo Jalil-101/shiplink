@@ -182,6 +182,34 @@ exports.sendMessage = async (req, res) => {
       .populate('userId', 'name email')
       .populate('companyId', 'companyName logo');
 
+    // Create notification for logistics company
+    try {
+      const { createNotification } = require('../utils/notificationService');
+      const company = await require('../models/LogisticsCompany.model').findById(companyId);
+      if (company && company.userId) {
+        await createNotification({
+          userId: company.userId,
+          title: `New message from ${chat.userId.name}`,
+          message: message.trim().substring(0, 100) + (message.trim().length > 100 ? '...' : ''),
+          category: 'chat',
+          type: 'info',
+          priority: 'high',
+          actionUrl: `/logistics-dashboard/chat/${order.order_id || orderMongoId}`,
+          relatedId: orderMongoId.toString(),
+          relatedType: 'Order',
+          metadata: {
+            chatId: chat._id.toString(),
+            orderId: orderMongoId.toString(),
+            senderName: chat.userId.name,
+            orderNumber: order.orderNumber || order.order_id
+          }
+        });
+      }
+    } catch (notifError) {
+      console.error('Error creating chat notification:', notifError);
+      // Don't fail the request if notification creation fails
+    }
+
     // Emit real-time message via Socket.io
     try {
       const { getIO } = require('../socket');
@@ -490,6 +518,31 @@ exports.sendCompanyMessage = async (req, res) => {
     chat = await Chat.findById(chat._id)
       .populate('userId', 'name email phone')
       .populate('companyId', 'companyName logo');
+
+    // Create notification for user
+    try {
+      const { createNotification } = require('../utils/notificationService');
+      await createNotification({
+        userId: order.userId,
+        title: `New message from ${company.companyName}`,
+        message: message.trim().substring(0, 100) + (message.trim().length > 100 ? '...' : ''),
+        category: 'chat',
+        type: 'info',
+        priority: 'high',
+        actionUrl: `/(user)/chat/${order.order_id || order._id}`,
+        relatedId: order._id.toString(),
+        relatedType: 'Order',
+        metadata: {
+          chatId: chat._id.toString(),
+          orderId: order._id.toString(),
+          senderName: company.companyName,
+          orderNumber: order.orderNumber || order.order_id
+        }
+      });
+    } catch (notifError) {
+      console.error('Error creating chat notification:', notifError);
+      // Don't fail the request if notification creation fails
+    }
 
     // Emit real-time message via Socket.io
     try {

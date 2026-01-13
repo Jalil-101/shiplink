@@ -306,12 +306,13 @@ exports.getAnalytics = async (req, res) => {
 
 /**
  * @route   GET /api/logistics-companies/dashboard/drivers
- * @desc    Get logistics company drivers
+ * @desc    Get all available drivers on the platform (for assignment to orders)
  * @access  Private (Logistics Company)
  */
 exports.getDrivers = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
+    const { search, isAvailable, verificationStatus } = req.query;
 
     // Get company profile
     const company = await LogisticsCompany.findOne({ userId });
@@ -322,25 +323,48 @@ exports.getDrivers = async (req, res) => {
       });
     }
 
-    // Get drivers by logisticsCompanyId (preferred) or from company.drivers array (fallback)
-    let drivers;
-    const driversByCompanyId = await Driver.find({ logisticsCompanyId: company._id })
-      .populate('userId', 'name email phone')
-      .sort({ createdAt: -1 });
-    
-    if (driversByCompanyId.length > 0) {
-      drivers = driversByCompanyId;
-    } else {
-      // Fallback to company.drivers array for backward compatibility
-      const driverIds = company.drivers || [];
-      drivers = await Driver.find({ _id: { $in: driverIds } })
-        .populate('userId', 'name email phone')
-        .sort({ createdAt: -1 });
+    // Build query to get all approved drivers on the platform
+    const query = {
+      verificationStatus: 'approved' // Only show approved drivers
+    };
+
+    // Filter by availability if provided
+    if (isAvailable !== undefined) {
+      query.isAvailable = isAvailable === 'true';
     }
 
+    // Get all approved drivers
+    let drivers = await Driver.find(query)
+      .populate('userId', 'name email phone avatar')
+      .sort({ createdAt: -1 });
+
+    // Filter by search term if provided
+    if (search) {
+      drivers = drivers.filter(driver => {
+        const user = driver.userId;
+        if (!user) return false;
+        return (
+          user.name?.toLowerCase().includes(search.toLowerCase()) ||
+          user.email?.toLowerCase().includes(search.toLowerCase()) ||
+          user.phone?.toLowerCase().includes(search.toLowerCase()) ||
+          driver.vehicleType?.toLowerCase().includes(search.toLowerCase()) ||
+          driver.vehicleModel?.toLowerCase().includes(search.toLowerCase()) ||
+          driver.vehiclePlate?.toLowerCase().includes(search.toLowerCase())
+        );
+      });
+    }
+
+    // Add additional info like total deliveries and rating
+    const driversWithStats = drivers.map(driver => {
+      const driverObj = driver.toObject();
+      // Check if driver is assigned to this company
+      driverObj.isAssignedToCompany = driver.logisticsCompanyId?.toString() === company._id.toString();
+      return driverObj;
+    });
+
     res.json({
-      drivers,
-      count: drivers.length
+      drivers: driversWithStats,
+      count: driversWithStats.length
     });
   } catch (error) {
     console.error('Get logistics company drivers error:', error);
