@@ -120,6 +120,51 @@ productSchema.pre('save', async function(next) {
   next();
 });
 
+// Virtual for average rating (calculated from reviews)
+productSchema.virtual('averageRating', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'productId',
+  justOne: false,
+  options: { match: { reported: false } }
+});
+
+// Virtual for review count
+productSchema.virtual('reviewCount', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'productId',
+  count: true,
+  options: { match: { reported: false } }
+});
+
+// Method to update rating stats (can be called after reviews are added/updated)
+productSchema.methods.updateRatingStats = async function() {
+  const Review = mongoose.model('Review');
+  const stats = await Review.aggregate([
+    { $match: { productId: this._id, reported: false } },
+    {
+      $group: {
+        _id: null,
+        averageRating: { $avg: '$rating' },
+        reviewCount: { $sum: 1 }
+      }
+    }
+  ]);
+
+  if (stats.length > 0) {
+    this.averageRating = Math.round(stats[0].averageRating * 10) / 10; // Round to 1 decimal
+    this.reviewCount = stats[0].reviewCount;
+  } else {
+    this.averageRating = 0;
+    this.reviewCount = 0;
+  }
+};
+
+// Ensure virtuals are included in JSON
+productSchema.set('toJSON', { virtuals: true });
+productSchema.set('toObject', { virtuals: true });
+
 module.exports = mongoose.model('Product', productSchema);
 
 

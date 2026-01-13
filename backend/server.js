@@ -33,6 +33,7 @@ const roleRoutes = require('./routes/role.routes');
 const uploadRoutes = require('./routes/upload.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const chatRoutes = require('./routes/chat.routes');
+const paymentRoutes = require('./routes/payment.routes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -103,6 +104,13 @@ app.use('/api/roles', roleRoutes); // Role switching and management
 app.use('/api/upload', uploadLimiter, uploadRoutes); // File uploads with rate limiting
 app.use('/api/notifications', notificationRoutes); // User notifications
 app.use('/api/chat', chatRoutes); // Chat (user routes)
+app.use('/api/payments', paymentRoutes); // Payments
+
+// Product reviews and comments (nested under products)
+const reviewRoutes = require('./routes/review.routes');
+const commentRoutes = require('./routes/comment.routes');
+app.use('/api/products/:productId/reviews', reviewRoutes);
+app.use('/api/products/:productId/comments', commentRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

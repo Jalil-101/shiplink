@@ -175,6 +175,20 @@ const orderSchema = new mongoose.Schema({
     enum: ['pending', 'paid', 'failed', 'refunded'],
     default: 'pending'
   },
+  paymentMethod: {
+    type: String,
+    enum: ['mobile_money', 'card', 'bank_transfer', null],
+    default: null
+  },
+  paymentReference: {
+    type: String,
+    default: null,
+    index: true
+  },
+  paymentData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
   
   // Soft delete flag (orders never actually deleted)
   softDelete: {

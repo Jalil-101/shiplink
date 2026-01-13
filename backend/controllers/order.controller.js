@@ -403,7 +403,9 @@ async function createMarketplaceOrder(userId, data, req) {
       email: req.user.email,
       phone: req.user.phone
     },
-    notes: notes || null
+    notes: notes || null,
+    paymentMethod: data.paymentMethod || null,
+    paymentStatus: data.paymentStatus || 'pending',
   });
 
   // Update product stock
