@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import logisticsApi from '@/lib/logisticsApi';
 import { FileText, DollarSign, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface Invoice {
   _id: string;
