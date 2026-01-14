@@ -741,7 +741,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { status, reason } = req.body;
     const orderId = req.params.id;
 
-    const order = await Order.findById(orderId);
+    let order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({
         error: 'Not Found',
