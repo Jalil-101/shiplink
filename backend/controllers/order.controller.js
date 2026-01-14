@@ -500,13 +500,17 @@ async function createCoachingOrder(userId, data) {
 /**
  * Get orders (supports filtering by type and status)
  * Returns orders where user is either the customer (userId) or the provider (provider_id)
+ * For drivers: also returns available delivery requests (status='created', no provider_id)
  */
 exports.getOrders = async (req, res) => {
   try {
-    const { order_type, status, page = 1, limit = 20, role } = req.query;
+    const { order_type, status, page = 1, limit = 20, role, available } = req.query;
+    const user = req.user;
+    const userRole = user.activeRole || user.role || 'user';
+    const isDriver = userRole === 'driver';
 
     // Build query: user can see orders where they are customer OR provider
-    const query = {
+    let query = {
       $or: [
         { userId: req.user._id },
         { provider_id: req.user._id }
@@ -514,11 +518,64 @@ exports.getOrders = async (req, res) => {
       softDelete: false
     };
 
+    // For drivers: also show available delivery requests (first-come-first-serve)
+    if (isDriver && (available === 'true' || available === true)) {
+      // Show available delivery orders (status='created', no provider assigned)
+      query = {
+        $or: [
+          { userId: req.user._id },
+          { provider_id: req.user._id },
+          {
+            order_type: 'delivery',
+            status: 'created',
+            provider_id: null,
+            softDelete: false
+          }
+        ]
+      };
+    } else if (isDriver && !order_type && !status) {
+      // Default for drivers: show their orders + available delivery requests
+      query = {
+        $or: [
+          { userId: req.user._id },
+          { provider_id: req.user._id },
+          {
+            order_type: 'delivery',
+            status: 'created',
+            provider_id: null,
+            softDelete: false
+          }
+        ]
+      };
+    }
+
     if (order_type) {
-      query.order_type = order_type;
+      // If showing available orders, still filter by type
+      if (query.$or && query.$or.length > 2) {
+        // Apply order_type filter to the available orders part
+        query.$or = query.$or.map(condition => {
+          if (condition.order_type) {
+            return { ...condition, order_type };
+          }
+          return condition;
+        });
+      } else {
+        query.order_type = order_type;
+      }
     }
     if (status) {
-      query.status = status;
+      // If showing available orders, still filter by status
+      if (query.$or && query.$or.length > 2) {
+        // Apply status filter to the available orders part
+        query.$or = query.$or.map(condition => {
+          if (condition.status) {
+            return { ...condition, status };
+          }
+          return condition;
+        });
+      } else {
+        query.status = status;
+      }
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -690,6 +747,34 @@ exports.updateOrderStatus = async (req, res) => {
     const isOwner = order.userId.toString() === req.user._id.toString();
     const providerIdStr = order.provider_id ? (order.provider_id._id ? order.provider_id._id.toString() : order.provider_id.toString()) : null;
     const isProvider = providerIdStr && providerIdStr === req.user._id.toString();
+    const userRole = req.user.activeRole || req.user.role || 'user';
+    const isDriver = userRole === 'driver';
+
+    // Special handling for drivers accepting orders (first-come-first-serve)
+    if (isDriver && status === 'provider_assigned' && order.status === 'created' && order.order_type === 'delivery' && !order.provider_id) {
+      // Driver is accepting an available order
+      // Check if order is still available (not assigned to another driver)
+      const Driver = require('../models/Driver.model');
+      const driver = await Driver.findOne({ userId: req.user._id });
+      if (!driver) {
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: 'Driver profile not found'
+        });
+      }
+
+      // Assign driver to order
+      order.provider_id = driver._id;
+      order.providerModel = 'Driver';
+      order.assignedAt = new Date();
+      // Status will be set to provider_assigned below
+    } else if (!isOwner && !isProvider && !isDriver) {
+      // Only owner, provider, or driver can update status
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You do not have permission to update this order'
+      });
+    }
 
     // Validate state transition
     if (!order.canTransitionTo(status)) {
