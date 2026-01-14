@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { BarChart3, Users, Package, DollarSign, TrendingUp } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface Overview {
   users: {
@@ -84,8 +85,8 @@ export default function AnalyticsPage() {
     },
     {
       name: 'Total Revenue',
-      value: `$${overview.revenue.total.toFixed(2)}`,
-      change: `$${overview.revenue.thisMonth.toFixed(2)} this month`,
+      value: formatGHS(overview.revenue?.total || 0),
+      change: `${formatGHS(overview.revenue?.thisMonth || 0)} this month`,
       icon: DollarSign,
       color: 'bg-yellow-500',
     },
@@ -188,11 +189,11 @@ export default function AnalyticsPage() {
           <div className="space-y-4">
             <div className="flex justify-between">
               <span className="text-gray-600">Total Revenue</span>
-              <span className="font-semibold text-gray-900">${overview.revenue.total.toFixed(2)}</span>
+              <span className="font-semibold text-gray-900">{formatGHS(overview.revenue?.total || 0)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">This Month</span>
-              <span className="font-semibold text-green-600">${overview.revenue.thisMonth.toFixed(2)}</span>
+              <span className="font-semibold text-green-600">{formatGHS(overview.revenue?.thisMonth || 0)}</span>
             </div>
           </div>
         </div>
