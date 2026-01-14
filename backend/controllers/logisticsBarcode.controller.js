@@ -75,3 +75,5 @@ exports.generateOrderQR = async (req, res) => {
   return exports.generateOrderBarcode(req, res);
 };
 
+
+

@@ -120,3 +120,5 @@ quoteSchema.pre('save', async function(next) {
 
 module.exports = mongoose.model('Quote', quoteSchema);
 
+
+

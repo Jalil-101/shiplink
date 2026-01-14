@@ -68,3 +68,5 @@ integrationSchema.index({ companyId: 1, isActive: 1 });
 
 module.exports = mongoose.model('Integration', integrationSchema);
 
+
+

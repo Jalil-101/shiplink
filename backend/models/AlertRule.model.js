@@ -73,3 +73,5 @@ alertRuleSchema.index({ trigger: 1, isActive: 1 });
 
 module.exports = mongoose.model('AlertRule', alertRuleSchema);
 
+
+

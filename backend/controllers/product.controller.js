@@ -12,13 +12,12 @@ const Product = require('../models/Product.model');
  */
 exports.getAllProducts = async (req, res) => {
   try {
-    const { category, search, featured, adminOnly, page = 1, limit = 20 } = req.query;
+    const { category, search, featured, page = 1, limit = 20 } = req.query;
     
     const query = { isActive: true };
     
     if (category) query.category = category;
     if (featured === 'true') query.isFeatured = true;
-    if (adminOnly === 'true') query.createdByType = 'AdminUser';
     if (search) {
       query.$text = { $search: search };
     }
@@ -26,7 +25,7 @@ exports.getAllProducts = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
     const products = await Product.find(query)
-      .select('name description price category images stock isFeatured weight dimensions createdByType')
+      .select('name description price category images stock isFeatured weight dimensions')
       .sort(featured === 'true' ? { isFeatured: -1, createdAt: -1 } : { createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));

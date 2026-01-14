@@ -133,3 +133,5 @@ chatSchema.methods.markAsRead = function(viewerType) {
 
 module.exports = mongoose.model('Chat', chatSchema);
 
+
+
