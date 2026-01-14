@@ -74,6 +74,15 @@ const paystackRequest = (endpoint, method = 'GET', data = null) => {
  */
 exports.initializePayment = async (req, res) => {
   try {
+    // Check if Paystack is configured
+    if (!PAYSTACK_SECRET_KEY) {
+      console.error('Paystack secret key is not configured');
+      return res.status(500).json({
+        error: 'Configuration Error',
+        message: 'Payment service is not configured. Please contact support.'
+      });
+    }
+
     const userId = req.user._id || req.user.id;
     const { amount, currency, paymentMethod, paymentData, orderId } = req.body;
 
@@ -133,12 +142,22 @@ exports.initializePayment = async (req, res) => {
     }
 
     // Initialize payment with Paystack
-    const paystackResponse = await paystackRequest('/transaction/initialize', 'POST', paystackData);
+    let paystackResponse;
+    try {
+      paystackResponse = await paystackRequest('/transaction/initialize', 'POST', paystackData);
+    } catch (error) {
+      console.error('Paystack API error:', error);
+      return res.status(500).json({
+        error: 'Payment Service Error',
+        message: error.message || 'Failed to connect to payment service. Please try again later.'
+      });
+    }
 
-    if (!paystackResponse.status) {
+    if (!paystackResponse || !paystackResponse.status) {
+      console.error('Paystack initialization failed:', paystackResponse);
       return res.status(400).json({
         error: 'Payment Error',
-        message: paystackResponse.message || 'Failed to initialize payment'
+        message: paystackResponse?.message || 'Failed to initialize payment. Please check your payment details and try again.'
       });
     }
 

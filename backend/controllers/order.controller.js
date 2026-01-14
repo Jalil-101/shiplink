@@ -381,10 +381,18 @@ async function createMarketplaceOrder(userId, data, req) {
 
   const total = subtotal + deliveryFee;
 
+  // Get order IDs from data (already generated in createOrder function)
+  const order_id = data.order_id;
+  const orderNumber = data.orderNumber;
+
+  if (!order_id || !orderNumber) {
+    throw new Error('Order IDs are required');
+  }
+
   // Create order
   const order = await Order.create({
-    order_id: orderData.order_id,
-    orderNumber: orderData.orderNumber,
+    order_id,
+    orderNumber,
     order_type: 'marketplace',
     userId,
     provider_id: sellerId,
