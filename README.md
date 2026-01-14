@@ -1,12 +1,19 @@
 # 🚀 ShipLink - Fullstack Logistics & Marketplace Platform
 
-This repository contains the **entire ShipLink platform**:
+**ShipLink** is a comprehensive delivery and marketplace platform combining logistics services with an integrated e-commerce marketplace. Built with modern technologies and real-time capabilities, tailored for the Ghanaian market with GHS (Ghanaian Cedis) currency support.
 
-- **Mobile App** (`frontend/`) – React Native / Expo app for users, drivers, sellers, logistics companies, sourcing agents, and import coaches.
-- **Backend API** (`backend/`) – Node.js / Express / MongoDB API with Socket.io, deterministic order IDs, and notification system.
-- **Admin Dashboard** (`admin/`) – Next.js admin console for operations, verification, content, and analytics.
+## 📊 Current Status: **PRODUCTION READY** ✅
 
-For a full, end‑to‑end overview of features, architecture, IDs, notifications, and deployment, see **`PROJECT_SUMMARY.md`**.
+- ✅ Backend deployed: `https://shiplink-q4hu.onrender.com`
+- ✅ All core features implemented
+- ✅ Admin dashboard deployed on Vercel
+- ✅ Logistics company dashboard deployed on Vercel
+- ✅ Mobile app ready for build
+- ✅ Real-time updates working
+- ✅ Marketplace fully functional
+- ✅ Multi-role system (User, Driver, Seller, Logistics Company, Sourcing Agent, Import Coach, Admin)
+- ✅ Unified Order System with commission calculation
+- ✅ Currency: GHS (Ghanaian Cedis) throughout
 
 ---
 
@@ -20,78 +27,150 @@ For a full, end‑to‑end overview of features, architecture, IDs, notification
 - [Development](#development)
 - [Configuration](#configuration)
 - [Architecture](#architecture)
-- [Code Quality](#code-quality)
+- [API Documentation](#api-documentation)
 - [Deployment](#deployment)
 - [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
 
 ---
 
-## 🎯 Mobile App Overview
+## 🎯 Project Overview
 
-The mobile app is a production-ready React Native application for logistics and delivery services, built with Expo, TypeScript, and NativeWind. It features role-based authentication, real-time tracking, and a modern UI with full dark mode support.
+This repository contains the **entire ShipLink platform**:
 
-### Key Capabilities
-
-- ✅ Role-based authentication (User/Driver)
-- ✅ Real-time delivery tracking
-- ✅ Secure token management
-- ✅ Dark mode support
-- ✅ Error boundaries and crash prevention
-- ✅ Retry logic for network requests
-- ✅ Memory leak prevention
-- ✅ Production-ready logging
-- ✅ Type-safe API integration
+- **Mobile App** (`frontend/`) – React Native / Expo app for users, drivers, sellers, logistics companies, sourcing agents, and import coaches
+- **Backend API** (`backend/`) – Node.js / Express / MongoDB API with Socket.io, deterministic order IDs, and notification system
+- **Admin Dashboard** (`admin/`) – Next.js admin console for operations, verification, content, and analytics
+- **Logistics Dashboard** (`admin/app/logistics-dashboard/`) – Next.js dashboard for logistics companies to manage orders, drivers, and operations
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Core Technologies
+### Mobile App (Frontend)
 - **Framework**: React Native + Expo SDK 54
 - **Language**: TypeScript (strict mode)
 - **Navigation**: Expo Router (file-based routing)
 - **Styling**: NativeWind v4 (Tailwind CSS for React Native)
 - **State Management**: React Context API
-
-### Key Libraries
 - **Forms**: React Hook Form + Yup validation
-- **Storage**: 
-  - `expo-secure-store` (sensitive data like tokens)
-  - `@react-native-async-storage/async-storage` (non-sensitive data)
+- **Storage**: expo-secure-store (tokens), AsyncStorage (non-sensitive)
 - **Icons**: Lucide React Native
-- **Images**: expo-image
-- **Maps**: React Native Maps (for location features)
-- **Safe Areas**: react-native-safe-area-context
+- **Maps**: React Native Maps
+- **Real-time**: Socket.io Client
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT (JSON Web Tokens)
+- **Real-time**: Socket.io
+- **Validation**: express-validator
+- **Security**: bcryptjs (password hashing), rate limiting
+
+### Admin Dashboard
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Data Tables**: TanStack Table
+- **Data Fetching**: TanStack Query
+- **HTTP Client**: Axios
+
+### Logistics Dashboard
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Currency**: GHS (Ghanaian Cedis) formatting
 
 ---
 
 ## ✨ Features
 
-### User (Importer) Features
-- User registration and authentication
+### 🔐 Authentication & User Management
+- Multi-role registration (User, Driver, Seller, Logistics Company, Sourcing Agent, Import Coach)
+- JWT-based authentication with secure token storage
+- Profile management with image upload
+- Password hashing and secure storage
+- User suspension/activation (admin)
+- Role application and verification system
+- Onboarding flow for new users
+
+### 🚚 Delivery System
 - Create delivery requests with package details
-- View order history and track deliveries
-- Profile management (Edit Profile, Payment Methods)
-- Settings (Security, Notifications, Help, Privacy, Terms, About)
-- Sourcing agent marketplace
-- Dark mode support
+- Automatic price calculation (distance + weight) in GHS
+- Unified Order System supporting multiple order types
+- Driver assignment and tracking (first-come-first-serve)
+- Real-time status updates via Socket.io
+- Delivery history and tracking
+- Commission calculation (15% for delivery orders)
+- Provider payout calculation
+- Dispute resolution (admin)
+- Return delivery management
 
-### Driver Features
-- Driver registration and authentication
-- View and accept available delivery requests
-- Manage active deliveries with status updates
-- Track earnings and statistics
+### 👨‍✈️ Driver Features
+- Driver profile creation with ID verification
 - Vehicle information management
-- Profile and settings management
-- Dark mode support
+- Availability toggle
+- Location tracking
+- Earnings dashboard (shows provider_payout)
+- View and accept available delivery requests
+- Real-time order updates
+- Delivery status management
 
-### Shared Features
-- Onboarding flow with role selection
-- Secure authentication with token management
-- Error boundaries for graceful error handling
-- Network retry logic with exponential backoff
-- Comprehensive logging system
-- Responsive design for all screen sizes
+### 🛒 Marketplace
+- Product catalog with categories
+- Shopping cart with real-time sync
+- Order management with delivery options
+- Optional delivery integration
+- Admin product management
+- Stock tracking with real-time updates
+- Free delivery promotions
+- Product reviews and ratings
+
+### 🏢 Logistics Company Features
+- Company profile management
+- Order management dashboard
+- Driver assignment
+- Order scheduling (pickup/delivery)
+- Financial tracking (gross_amount, commission, provider_payout)
+- Invoice generation
+- Quote management
+- Return management
+- Analytics and reporting
+
+### 👨‍💼 Admin Dashboard
+- **User Management**: View, suspend, force logout, activity history
+- **Driver Verification**: Approve/reject, request re-upload, suspend
+- **Logistics Company Management**: View, verify, manage companies
+- **Delivery Oversight**: View, filter, reassign, resolve disputes
+- **Product Management**: CRUD, categories, images (max 3), stock
+- **Order Management**: View, filter, update status (unified orders)
+- **Content Management**: Announcements, banners, FAQ
+- **Analytics**: Overview, user/driver/delivery analytics
+- **Financial**: Payouts, earnings tracking (GHS currency)
+- **Settings**: Free delivery toggle, pricing configuration
+- **System Health**: Monitoring, audit logs
+
+### 🔔 Real-time Features (Socket.io)
+- Product stock updates
+- Cart synchronization
+- Order status updates
+- Settings changes
+- Driver availability
+- Notification badge counts
+- Order creation notifications
+
+### 💰 Pricing & Commission System
+- **Currency**: GHS (Ghanaian Cedis) throughout
+- **Commission Rates**:
+  - Delivery orders: 15%
+  - Marketplace orders: 10%
+  - Sourcing orders: 5%
+  - Coaching orders: 10%
+- **Pricing Display**:
+  - Users see: `gross_amount` (what they pay)
+  - Providers see: `provider_payout` (what they earn after commission)
+- **Consistency**: All amounts displayed in GHS (₵) across all dashboards
 
 ---
 
@@ -99,12 +178,12 @@ The mobile app is a production-ready React Native application for logistics and 
 
 ```
 shiplink-fullstack/
-├── frontend/                    # React Native app
+├── frontend/                    # React Native mobile app
 │   ├── app/                     # Expo Router screens (file-based routing)
 │   │   ├── _layout.tsx         # Root layout with providers
 │   │   ├── index.tsx           # Entry point with redirect logic
 │   │   ├── (onboarding)/       # Onboarding flow
-│   │   │   ├── splash.tsx
+│   │   │   ├── splash.tsx     # Splash screen (uses splash-icon.png)
 │   │   │   ├── features.tsx
 │   │   │   └── role-selection.tsx
 │   │   ├── (auth)/             # Authentication screens
@@ -112,69 +191,87 @@ shiplink-fullstack/
 │   │   │   ├── register.tsx
 │   │   │   └── forgot-password.tsx
 │   │   ├── (user)/             # User role screens
-│   │   │   ├── _layout.tsx     # User tabs layout
 │   │   │   ├── (tabs)/         # User tab screens
 │   │   │   │   ├── home.tsx
 │   │   │   │   ├── track.tsx
 │   │   │   │   ├── orders.tsx
 │   │   │   │   └── profile.tsx
-│   │   │   ├── create-delivery.tsx
-│   │   │   ├── edit-profile.tsx
-│   │   │   ├── payment-methods.tsx
-│   │   │   ├── settings.tsx
-│   │   │   ├── security.tsx
-│   │   │   ├── notifications.tsx
-│   │   │   ├── help.tsx
-│   │   │   ├── about.tsx
-│   │   │   ├── privacy.tsx
-│   │   │   ├── terms.tsx
-│   │   │   └── sourcing-agent.tsx
+│   │   │   └── [various screens]
 │   │   └── (driver)/           # Driver role screens
-│   │       ├── _layout.tsx     # Driver tabs layout
 │   │       ├── (tabs)/         # Driver tab screens
 │   │       │   ├── dashboard.tsx
 │   │       │   ├── deliveries.tsx
 │   │       │   ├── maps.tsx
 │   │       │   └── earnings.tsx
-│   │       ├── edit-profile.tsx
-│   │       ├── vehicle-info.tsx
-│   │       ├── create-profile.tsx
-│   │       ├── settings.tsx
-│   │       ├── security.tsx
-│   │       ├── notifications.tsx
-│   │       ├── help.tsx
-│   │       ├── about.tsx
-│   │       ├── privacy.tsx
-│   │       └── terms.tsx
+│   │       └── [various screens]
 │   ├── src/
 │   │   ├── components/         # Reusable components
-│   │   │   ├── ErrorBoundary.tsx
-│   │   │   ├── LocationMapPreview.tsx
-│   │   │   └── SkeletonLoader.tsx
 │   │   ├── context/            # React Context providers
-│   │   │   ├── AuthContext.tsx # Authentication state
-│   │   │   └── ThemeContext.tsx # Dark mode management
+│   │   │   ├── AuthContext.tsx
+│   │   │   ├── ThemeContext.tsx
+│   │   │   └── CurrencyContext.tsx
 │   │   ├── services/           # API service layer
 │   │   │   └── api.ts          # Centralized API client
 │   │   ├── types/              # TypeScript definitions
-│   │   │   ├── api.ts          # API request/response types
-│   │   │   └── index.ts        # General types
 │   │   ├── utils/              # Utility functions
-│   │   │   ├── logger.ts       # Logging utility
-│   │   │   ├── storage.ts      # Secure/regular storage
-│   │   │   ├── navigation.ts   # Safe navigation helper
-│   │   │   ├── location.ts     # Location utilities
-│   │   │   └── analytics.ts    # Analytics tracking
-│   │   └── constants/         # App constants
-│   ├── assets/                 # Images, fonts, SVGs
-│   ├── SVGs/                   # Custom SVG assets
-│   ├── components/             # Expo-generated components
-│   ├── global.css              # Global styles
+│   │   │   ├── logger.ts
+│   │   │   ├── storage.ts
+│   │   │   ├── validation.ts
+│   │   │   └── currency.ts
+│   │   └── constants/
+│   ├── assets/
+│   │   └── images/
+│   │       ├── splash-icon.png      # App icon & splash screen
+│   │       ├── android-icon-foreground.png
+│   │       ├── android-icon-background.png
+│   │       └── android-icon-monochrome.png
 │   ├── app.json                # Expo configuration
-│   ├── package.json
-│   └── tsconfig.json
-├── package.json                # Root package.json
-└── README.md                   # This file
+│   └── package.json
+│
+├── backend/                     # Node.js API server
+│   ├── server.js               # Main server with Socket.io
+│   ├── socket.js               # Socket.io setup
+│   ├── controllers/            # Business logic
+│   │   ├── order.controller.js
+│   │   ├── auth.controller.js
+│   │   ├── driver.controller.js
+│   │   ├── admin.controller.js
+│   │   └── [more controllers]
+│   ├── models/                 # Mongoose models
+│   │   ├── Order.model.js
+│   │   ├── User.model.js
+│   │   ├── Driver.model.js
+│   │   └── [more models]
+│   ├── routes/                 # API endpoints
+│   ├── middleware/             # Auth, validation, error handling
+│   ├── utils/                  # Utilities
+│   │   ├── commissionCalculator.js
+│   │   ├── distance.js
+│   │   └── idGenerator.js
+│   └── package.json
+│
+├── admin/                       # Next.js admin dashboard
+│   ├── app/
+│   │   ├── dashboard/          # Admin pages
+│   │   │   ├── users/
+│   │   │   ├── drivers/
+│   │   │   ├── orders/
+│   │   │   ├── analytics/
+│   │   │   └── [more pages]
+│   │   ├── logistics-dashboard/ # Logistics company dashboard
+│   │   │   ├── orders/
+│   │   │   ├── drivers/
+│   │   │   ├── billing/
+│   │   │   └── [more pages]
+│   │   ├── login/
+│   │   └── logistics-login/
+│   ├── lib/
+│   │   ├── api.ts              # API client
+│   │   ├── auth.ts             # Auth utilities
+│   │   └── currency.ts         # GHS formatting
+│   └── package.json
+│
+└── README.md                    # This file
 ```
 
 ---
@@ -185,9 +282,9 @@ shiplink-fullstack/
 
 - **Node.js** v18 or higher - [Download](https://nodejs.org/)
 - **npm** or **yarn**
+- **MongoDB** (local or Atlas) - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
 - **Expo CLI** (optional): `npm install -g expo-cli`
-- **iOS Simulator** (Mac only) or **Android Studio** (for Android emulator)
-- **Expo Go** app on your phone (for physical device testing)
+- **EAS CLI** (for builds): `npm install -g eas-cli`
 
 ### Installation
 
@@ -197,82 +294,153 @@ git clone <your-repo-url>
 cd shiplink-fullstack
 ```
 
-2. **Install dependencies**
+2. **Install backend dependencies**
 ```bash
-   cd frontend
-   npm install
-   ```
-
-3. **Configure environment variables**
-   
-   Create a `.env` file in the `frontend` directory:
-   ```env
-   # Production API URL (when backend is hosted)
-   EXPO_PUBLIC_API_BASE_URL=https://your-backend-api.com/api
-   
-   # OR for local development:
-   # EXPO_PUBLIC_API_BASE_URL=http://localhost:5444/api
-   
-   # OR for physical device testing (use your computer's IP):
-   # EXPO_PUBLIC_API_BASE_URL=http://192.168.1.100:5444/api
-   ```
-
-4. **Start the development server**
-```bash
-   npm start
+cd backend
+npm install
 ```
 
-   Or from the root directory:
+3. **Install frontend dependencies**
 ```bash
-npm run dev
+cd ../frontend
+npm install
 ```
 
-5. **Run on device/emulator**
+4. **Install admin dashboard dependencies**
+```bash
+cd ../admin
+npm install
+```
+
+### Configuration
+
+#### Backend Configuration
+
+1. **Create `.env` file in `backend/` directory:**
+```env
+PORT=5444
+NODE_ENV=development
+MONGODB_URI=mongodb://localhost:27017/shiplink
+# OR for MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/shiplink
+
+JWT_SECRET=your-secret-key-here
+JWT_EXPIRE=7d
+
+# Paystack (optional)
+PAYSTACK_SECRET_KEY=your-paystack-secret-key
+PAYSTACK_PUBLIC_KEY=your-paystack-public-key
+
+# Email (optional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+```
+
+2. **Start the backend server:**
+```bash
+cd backend
+npm run dev    # Development mode with auto-reload
+# OR
+npm start      # Production mode
+```
+
+#### Frontend Configuration
+
+1. **Create `.env` file in `frontend/` directory:**
+```env
+# Production API URL
+EXPO_PUBLIC_API_BASE_URL=https://shiplink-q4hu.onrender.com/api
+
+# OR for local development:
+# EXPO_PUBLIC_API_BASE_URL=http://localhost:5444/api
+
+# OR for physical device testing (use your computer's IP):
+# EXPO_PUBLIC_API_BASE_URL=http://192.168.1.100:5444/api
+```
+
+2. **Start the development server:**
+```bash
+cd frontend
+npm start
+```
+
+3. **Run on device/emulator:**
    - Press `i` for iOS simulator
    - Press `a` for Android emulator
    - Scan QR code with Expo Go app on your phone
+
+#### Admin Dashboard Configuration
+
+1. **Create `.env.local` file in `admin/` directory:**
+```env
+NEXT_PUBLIC_API_URL=https://shiplink-q4hu.onrender.com
+# OR for local development:
+# NEXT_PUBLIC_API_URL=http://localhost:5444
+```
+
+2. **Start the development server:**
+```bash
+cd admin
+npm run dev
+```
+
+3. **Open** [http://localhost:3000](http://localhost:3000) in your browser
 
 ---
 
 ## 💻 Development
 
+### Running All Services
+
+```bash
+# Terminal 1: Backend
+cd backend
+npm run dev
+
+# Terminal 2: Frontend
+cd frontend
+npm start
+
+# Terminal 3: Admin Dashboard
+cd admin
+npm run dev
+```
+
 ### Development Mode Authentication
 
-The app includes **mock authentication** for development mode. This allows you to test UI flows without a connected backend:
-
+The app includes **mock authentication** for development mode:
 - **Any email/password** will work in development mode
 - Email containing "driver" → logs in as driver role
 - Any other email → logs in as user role
 - Mock authentication is automatically disabled in production builds
 
-### Running the App
-
-```bash
-# Start Expo dev server
-npm start
-
-# Run on specific platform
-npm run android    # Android emulator
-npm run ios        # iOS simulator
-npm run web        # Web browser
-```
-
 ### Project Scripts
 
+#### Backend
 ```bash
-npm start          # Start Expo dev server
-npm run android    # Run on Android
-npm run ios        # Run on iOS
-npm run web        # Run on web
-npm run lint       # Run ESLint
+npm run dev      # Development mode with nodemon
+npm start        # Production mode
+npm test         # Run tests (if configured)
 ```
 
-### Development Workflow
+#### Frontend
+```bash
+npm start        # Start Expo dev server
+npm run android  # Run on Android
+npm run ios      # Run on iOS
+npm run web      # Run on web
+npm run lint     # Run ESLint
+```
 
-1. **Make changes** to files in `frontend/`
-2. **Hot reload** - Changes appear automatically
-3. **Check console** for errors and API logs
-4. **Test on device** - Use Expo Go app for physical device testing
+#### Admin Dashboard
+```bash
+npm run dev      # Development server
+npm run build    # Production build
+npm start        # Production server
+npm run lint     # Run ESLint
+```
 
 ---
 
@@ -280,29 +448,27 @@ npm run lint       # Run ESLint
 
 ### Environment Variables
 
-Create `frontend/.env`:
+#### Backend (`.env`)
+- `PORT` - Server port (default: 5444)
+- `MONGODB_URI` - MongoDB connection string
+- `JWT_SECRET` - Secret key for JWT tokens
+- `JWT_EXPIRE` - Token expiration (default: 7d)
+- `PAYSTACK_SECRET_KEY` - Paystack secret key (optional)
+- `PAYSTACK_PUBLIC_KEY` - Paystack public key (optional)
 
-```env
-# API Configuration
-EXPO_PUBLIC_API_BASE_URL=https://shilink-backend.onrender.com/api
+#### Frontend (`.env`)
+- `EXPO_PUBLIC_API_BASE_URL` - Backend API URL
 
-# For local development:
-# EXPO_PUBLIC_API_BASE_URL=http://localhost:5444/api
+#### Admin Dashboard (`.env.local`)
+- `NEXT_PUBLIC_API_URL` - Backend API URL
 
-# For physical device (use your computer's LAN IP):
-# EXPO_PUBLIC_API_BASE_URL=http://192.168.1.100:5444/api
-```
+### App Icon & Splash Screen
 
-### API Configuration
-
-The app connects to a backend API. The API base URL is configured in:
-- `frontend/.env` file (for environment-specific URLs)
-- `frontend/src/services/api.ts` (for default fallback and platform-specific URLs)
-
-**Platform-specific defaults:**
-- Android emulator: `http://10.0.2.2:5444/api`
-- iOS simulator: `http://127.0.0.1:5444/api`
-- Physical devices: Must set `EXPO_PUBLIC_API_BASE_URL` to your computer's LAN IP
+The app icon and splash screen use the same image for consistency:
+- **Icon**: `frontend/assets/images/splash-icon.png`
+- **Splash Screen**: `frontend/assets/images/splash-icon.png`
+- **Android Adaptive Icon**: Uses separate foreground/background images
+- **Configuration**: `frontend/app.json`
 
 ---
 
@@ -312,6 +478,7 @@ The app connects to a backend API. The API base URL is configured in:
 
 - **AuthContext**: Manages authentication state, user data, and login/logout
 - **ThemeContext**: Manages dark/light mode preference
+- **CurrencyContext**: Manages currency (GHS) and formatting
 - **React Context API**: For global state management
 - **Local State**: React hooks (`useState`, `useReducer`) for component-level state
 
@@ -326,15 +493,17 @@ The app connects to a backend API. The API base URL is configured in:
 - Comprehensive error handling
 - Network error detection and user-friendly messages
 - Type-safe request/response handling
+- Rate limit error handling
 
 **Key Methods:**
 - `login()` - User/driver authentication
 - `register()` - User/driver registration
-- `getMyRequests()` - Get user's delivery requests
-- `getPendingRequests()` - Get available requests (driver)
-- `createDeliveryRequest()` - Create new delivery
-- `updateDeliveryRequest()` - Update delivery status
-- `getMyDriverProfile()` - Get driver profile
+- `createOrder()` - Create unified order (delivery, marketplace, sourcing, coaching)
+- `getAvailableOrdersForDrivers()` - Get available delivery orders
+- `acceptOrder()` - Accept order (driver)
+- `updateOrderStatus()` - Update order status
+- `getUserOrders()` - Get user orders
+- `getMyDeliveries()` - Get driver deliveries
 - And more...
 
 ### Navigation
@@ -343,7 +512,7 @@ The app connects to a backend API. The API base URL is configured in:
 - Routes are defined by file structure in `app/` directory
 - Protected routes based on authentication status
 - Role-based navigation (User/Driver tabs)
-- Safe navigation helper (`useSafeNavigation`) for back button handling
+- Safe navigation helper for back button handling
 
 **Navigation Flow:**
 1. App starts → `index.tsx` checks auth state
@@ -372,80 +541,194 @@ The app connects to a backend API. The API base URL is configured in:
 
 ---
 
-## 🔒 Code Quality
+## 🔌 API Documentation
 
-### Security Features
+### Authentication Endpoints
 
-- ✅ Secure token storage using `expo-secure-store`
-- ✅ Sensitive data never stored in AsyncStorage
-- ✅ Development mode authentication bypass (disabled in production)
-- ✅ Automatic token refresh handling
-- ✅ Secure API communication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
 
-### Best Practices Implemented
+### Order Endpoints (Unified)
 
-- ✅ **TypeScript**: Full type safety throughout
-- ✅ **Error Boundaries**: Prevent app crashes
-- ✅ **Memory Leak Prevention**: Cleanup functions in useEffect hooks
-- ✅ **Request Retry Logic**: Exponential backoff for network requests
-- ✅ **Structured Logging**: Centralized logger with log levels
-- ✅ **Code Comments**: Key files and complex logic documented
-- ✅ **Consistent Styling**: NativeWind for uniform UI
-- ✅ **Dark Mode**: Full dark mode support across all screens
+- `POST /api/orders` - Create order (delivery, marketplace, sourcing, coaching)
+- `GET /api/orders` - Get orders (with filters: `available=true`, `order_type`, `status`)
+- `GET /api/orders/:id` - Get order by ID
+- `PATCH /api/orders/:id/status` - Update order status
+- `DELETE /api/orders/:id` - Cancel order
 
-### Code Organization
+### Driver Endpoints
 
-- **Separation of Concerns**: Clear separation between UI, logic, and data
-- **Reusable Components**: Shared components in `src/components/`
-- **Utility Functions**: Common utilities in `src/utils/`
-- **Type Definitions**: All types in `src/types/`
-- **Context Providers**: Global state in `src/context/`
+- `GET /api/orders?available=true&order_type=delivery` - Get available delivery orders
+- `PATCH /api/orders/:id/status` (status: `provider_assigned`) - Accept order
+- `GET /api/drivers/me/profile` - Get driver profile
+- `PATCH /api/drivers/:id/availability` - Toggle availability
+
+### User Endpoints
+
+- `GET /api/orders` - Get user orders
+- `GET /api/users/me` - Get current user profile
+- `PUT /api/users/me` - Update user profile
+
+### Admin Endpoints
+
+- `POST /api/admin/login` - Admin login
+- `GET /api/admin/users` - Get all users
+- `GET /api/admin/drivers` - Get all drivers
+- `GET /api/admin/orders` - Get all orders
+- `GET /api/admin/logistics-companies` - Get all logistics companies
+- `PATCH /api/admin/drivers/:id/verify` - Verify driver
+- `PATCH /api/admin/users/:id/suspend` - Suspend user
+
+### Logistics Company Endpoints
+
+- `POST /api/logistics-companies/login` - Logistics company login
+- `GET /api/logistics-companies/dashboard/orders` - Get company orders
+- `GET /api/logistics-companies/dashboard/drivers` - Get available drivers
+- `POST /api/logistics-companies/dashboard/orders/:id/assign-driver` - Assign driver
+- `GET /api/logistics-companies/dashboard/overview` - Get dashboard overview
+
+### Authentication
+
+All protected routes require a JWT token in the Authorization header:
+```
+Authorization: Bearer <token>
+```
 
 ---
 
 ## 🚢 Deployment
 
-### Building for Production
+### Backend Deployment (Render)
 
-```bash
-cd frontend
+1. **Connect GitHub repository to Render**
+2. **Set environment variables:**
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `JWT_EXPIRE`
+   - `PAYSTACK_SECRET_KEY` (optional)
+   - `PAYSTACK_PUBLIC_KEY` (optional)
 
-# Build for Android
-eas build --platform android
+3. **Deploy**: Auto-deploy from GitHub enabled
+4. **Health Check**: `GET /health`
 
-# Build for iOS
-eas build --platform ios
-```
+**Deployed URL**: `https://shiplink-q4hu.onrender.com`
 
-### Prerequisites for Production Build
+### Admin Dashboard Deployment (Vercel)
+
+1. **Connect GitHub repository to Vercel**
+2. **Set root directory**: `admin`
+3. **Set build command**: `npm run build`
+4. **Set environment variable:**
+   - `NEXT_PUBLIC_API_URL=https://shiplink-q4hu.onrender.com`
+
+5. **Deploy**: Auto-deploy from GitHub enabled
+
+### Logistics Dashboard Deployment (Vercel)
+
+Same as Admin Dashboard, but routes are under `/logistics-dashboard/*`
+
+### Mobile App Deployment (EAS Build)
+
+#### Prerequisites
 
 1. **Expo Account**: Sign up at [expo.dev](https://expo.dev)
 2. **EAS CLI**: `npm install -g eas-cli`
-3. **Configure app.json**: Update app name, bundle ID, etc.
+3. **Login**: `eas login`
 
-### Environment Setup for Production
+#### Build Configuration
 
-1. Set production API URL in `.env`:
-   ```env
-   EXPO_PUBLIC_API_BASE_URL=https://shilink-backend.onrender.com/api
-   ```
+1. **Configure `frontend/eas.json`** (if not exists):
+```json
+{
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}
+```
 
-2. Build with EAS:
+2. **Set production API URL in `.env`:**
+```env
+EXPO_PUBLIC_API_BASE_URL=https://shiplink-q4hu.onrender.com/api
+```
+
+3. **Build for Android:**
 ```bash
-   eas build --platform android --profile production
-   ```
+cd frontend
+eas build --platform android --profile production
+```
 
-3. **Important**: Mock authentication is automatically disabled in production builds
+4. **Build for iOS:**
+```bash
+cd frontend
+eas build --platform ios --profile production
+```
 
-### Build Process
+#### App Icon & Splash Screen
 
-When you build the app:
-- Environment variables are embedded at build time
-- Code is minified and optimized
-- Mock authentication is disabled
-- Production logging is configured (only errors/warnings)
+The app icon and splash screen are configured in `frontend/app.json`:
+- **Icon**: `./assets/images/splash-icon.png` (1024x1024px recommended)
+- **Splash Screen**: Uses the same `splash-icon.png`
+- **Android Adaptive Icon**: Configured with foreground/background images
 
-**Note**: After building, you can't change the API URL without rebuilding. Make sure to set the correct production URL before building.
+**Important**: Ensure `splash-icon.png` matches your brand logo. The same image is used for:
+- App icon (when installed)
+- Splash screen (on app launch)
+- Android adaptive icon foreground
+
+---
+
+## 🔐 Default Admin Access
+
+### Create Admin User
+
+```bash
+cd backend
+node scripts/create-admin.js
+```
+
+**Default credentials** (change after first login):
+- Email: `admin@shiplink.com`
+- Password: `admin123`
+
+**⚠️ Change the password after first login!**
+
+---
+
+## 💰 Pricing & Commission System
+
+### Commission Rates
+
+- **Delivery Orders**: 15% commission
+- **Marketplace Orders**: 10% commission (can be overridden by seller)
+- **Sourcing Orders**: 5% commission (can be overridden by agent)
+- **Coaching Orders**: 10% commission (can be overridden by coach)
+
+### Pricing Display
+
+- **Users see**: `gross_amount` (what they pay in GHS)
+- **Providers see**: `provider_payout` (what they earn after commission in GHS)
+- **Currency**: All amounts displayed in GHS (₵) throughout the platform
+
+### Commission Calculation
+
+```javascript
+commission_amount = (gross_amount * commission_rate) / 100
+provider_payout = gross_amount - commission_amount
+```
+
+**Example** (Delivery order):
+- Gross Amount: ₵100.00
+- Commission (15%): ₵15.00
+- Provider Payout: ₵85.00
 
 ---
 
@@ -458,9 +741,6 @@ When you build the app:
 - Verify backend is running and accessible
 - For physical devices, ensure phone and computer are on same WiFi
 - Check firewall settings
-- **See detailed guides:**
-  - `frontend/TROUBLESHOOTING_NETWORK.md` - Network connection issues
-  - `frontend/CONNECTING_PHONE.md` - Physical device setup
 
 #### 2. "Module not found"
 ```bash
@@ -481,14 +761,51 @@ npx expo start -c  # Clear cache
 - Ensure backend is running
 - For physical devices, use your computer's LAN IP address
 
-#### 5. "Back button redirects to home/dashboard"
-- This is fixed with the `useSafeNavigation` helper
-- If still occurring, check that all screens use `goBack()` from `useSafeNavigation`
+#### 5. "Assignment to constant variable" (Backend Error)
+- Fixed: Changed `const order` to `let order` in `order.controller.js`
+- This error occurred when drivers tried to accept deliveries
 
-#### 6. "Dark mode not working"
+#### 6. "Order already assigned" Error
+- This is expected when multiple drivers try to accept the same order
+- The system prevents race conditions by checking order availability before assignment
+
+#### 7. "Dark mode not working"
 - Ensure `ThemeProvider` wraps the app (done in `_layout.tsx`)
 - Check that screens use `useTheme()` hook
 - Verify NativeWind dark mode classes are applied
+
+#### 8. "Currency showing as $ instead of ₵"
+- All currency displays have been updated to GHS
+- Check that `formatGHS()` is imported and used
+- Verify `CurrencyContext` is properly configured
+
+---
+
+## 🔒 Security & Best Practices
+
+### Security Features
+
+- ✅ Secure token storage using `expo-secure-store`
+- ✅ Sensitive data never stored in AsyncStorage
+- ✅ Development mode authentication bypass (disabled in production)
+- ✅ Automatic token refresh handling
+- ✅ Secure API communication
+- ✅ Password hashing with bcrypt
+- ✅ Rate limiting on API endpoints
+- ✅ Input validation on all critical endpoints
+- ✅ CORS configuration and security headers
+- ✅ Admin audit logging for sensitive actions
+
+### Code Quality
+
+- ✅ **TypeScript**: Full type safety throughout
+- ✅ **Error Boundaries**: Prevent app crashes
+- ✅ **Memory Leak Prevention**: Cleanup functions in useEffect hooks
+- ✅ **Request Retry Logic**: Exponential backoff for network requests
+- ✅ **Structured Logging**: Centralized logger with log levels
+- ✅ **Code Comments**: Key files and complex logic documented
+- ✅ **Consistent Styling**: NativeWind for uniform UI
+- ✅ **Dark Mode**: Full dark mode support across all screens
 
 ---
 
@@ -496,41 +813,76 @@ npx expo start -c  # Clear cache
 
 ### Core Files
 
+#### Frontend
 - **`app/_layout.tsx`**: Root layout with all providers
 - **`app/index.tsx`**: Entry point with routing logic
 - **`src/context/AuthContext.tsx`**: Authentication state management
 - **`src/context/ThemeContext.tsx`**: Dark mode management
+- **`src/context/CurrencyContext.tsx`**: Currency (GHS) management
 - **`src/services/api.ts`**: API client and all API calls
 - **`src/utils/navigation.ts`**: Safe navigation helper
 - **`src/utils/logger.ts`**: Logging utility
 - **`src/utils/storage.ts`**: Secure and regular storage
+- **`src/utils/validation.ts`**: Form validation utilities
+- **`src/utils/currency.ts`**: Currency formatting utilities
+
+#### Backend
+- **`server.js`**: Main server file with Socket.io
+- **`controllers/order.controller.js`**: Order management logic
+- **`controllers/auth.controller.js`**: Authentication logic
+- **`models/Order.model.js`**: Unified Order model
+- **`utils/commissionCalculator.js`**: Commission calculation
+- **`utils/distance.js`**: Distance and price calculation
+- **`utils/idGenerator.js`**: Deterministic ID generation
+
+#### Admin Dashboard
+- **`app/dashboard/`**: Admin pages
+- **`lib/api.ts`**: API client
+- **`lib/auth.ts`**: Auth utilities
+- **`lib/currency.ts`**: GHS formatting
 
 ### Important Components
 
 - **`src/components/ErrorBoundary.tsx`**: Error boundary for crash prevention
 - **`src/components/LocationMapPreview.tsx`**: Map preview component
 - **`src/components/SkeletonLoader.tsx`**: Loading skeleton component
+- **`components/DeliveryDetailsModal.tsx`**: Delivery details modal
+- **`components/OrderDetailsModal.tsx`**: Order details modal
 
 ---
 
 ## 🔄 Recent Updates
 
-### Navigation Fix
-- Implemented safe navigation helper to prevent back button redirects
-- Fixed navigation flow: nested screens → Settings → Profile/Dashboard tabs
-- Removed duplicate menu items between Profile and Settings screens
+### Version 2.0.0 (Current)
 
-### Dark Mode
-- Full dark mode support across all screens
-- Theme preference persistence
-- System theme detection
+#### Major Features
+- ✅ Unified Order System (delivery, marketplace, sourcing, coaching)
+- ✅ Multi-role system with role applications
+- ✅ Commission calculation system
+- ✅ GHS currency support throughout
+- ✅ Real-time updates via Socket.io
+- ✅ Admin and Logistics dashboards
+- ✅ Driver order acceptance with race condition prevention
+- ✅ Pricing consistency (users see gross_amount, providers see provider_payout)
 
-### Code Quality
-- Added comprehensive comments to key files
-- Implemented error boundaries
-- Added retry logic for network requests
-- Secure storage for sensitive data
-- Memory leak prevention
+#### Bug Fixes
+- ✅ Fixed "Assignment to constant variable" error in order status update
+- ✅ Fixed driver dashboard showing 0.00 for delivery prices
+- ✅ Fixed driver accept delivery functionality
+- ✅ Fixed admin analytics page crash
+- ✅ Fixed currency displays (all now in GHS)
+- ✅ Fixed driver dropdown in logistics dashboard
+- ✅ Fixed state transition validation in order controller
+- ✅ Fixed logout redirect to login screen
+- ✅ Fixed onboarding flow (direct to signup, no role selection)
+
+#### Improvements
+- ✅ Improved error handling with user-friendly messages
+- ✅ Added rate limit error handling
+- ✅ Improved driver order visibility
+- ✅ Added view details modals for admin dashboard
+- ✅ Enhanced pricing display consistency
+- ✅ Improved code organization and documentation
 
 ---
 
@@ -556,9 +908,33 @@ MIT License - See LICENSE file for details
 For questions or issues:
 1. Check the troubleshooting section above
 2. Review the code comments in key files
-3. Check `frontend/TROUBLESHOOTING_NETWORK.md` for network issues
-4. Contact the development team
+3. Contact the development team
+
+---
+
+## 📝 Notes
+
+### Currency
+- All amounts are stored and displayed in **GHS (Ghanaian Cedis)**
+- Currency symbol: **₵**
+- Formatting utility: `formatGHS(amount)` in admin, `formatAmount(amount)` in mobile app
+
+### Order System
+- **Unified Order Model**: All order types (delivery, marketplace, sourcing, coaching) use the same Order model
+- **State Machine**: Orders follow a strict state transition system
+- **Commission**: Calculated on backend only, immutable after completion
+- **Provider Assignment**: Drivers can accept available orders (first-come-first-serve)
+
+### Role System
+- **Multi-role Support**: Users can have multiple roles (user, driver, seller, etc.)
+- **Role Applications**: Users apply for additional roles, admins verify
+- **Active Role**: Users can switch between their verified roles
+- **RBAC**: Backend checks all verified roles, not just active role
 
 ---
 
 **Built with ❤️ by the ShipLink Team**
+
+**Version**: 2.0.0  
+**Last Updated**: 2026-01-14  
+**Status**: Production Ready ✅
