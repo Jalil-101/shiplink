@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import logisticsApi from '@/lib/logisticsApi';
 import { Package, Clock, CheckCircle, Truck, XCircle, Search, Filter, Calendar } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface Order {
   _id: string;
@@ -304,7 +305,7 @@ export default function LogisticsOrdersPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${order.gross_amount?.toFixed(2) || '0.00'}
+                        {formatGHS(order.gross_amount || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {order.packageDetails?.weight || 'N/A'} {order.packageDetails?.weightUnit || 'kg'}

@@ -39,6 +39,9 @@ function LogisticsCompaniesPageContent() {
   const [selectedCompany, setSelectedCompany] = useState<LogisticsCompany | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState<any>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'suspend' | null>(null);
   const [notes, setNotes] = useState('');
   const [enrollForm, setEnrollForm] = useState({
@@ -95,8 +98,9 @@ function LogisticsCompaniesPageContent() {
         return (
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => window.location.href = `/dashboard/logistics-companies/${company._id}`}
+              onClick={() => handleViewCompany(company._id)}
               className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+              title="View Details"
             >
               <Eye className="h-4 w-4" />
             </button>
@@ -158,6 +162,21 @@ function LogisticsCompaniesPageContent() {
       console.error('Error fetching companies:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewCompany = async (companyId: string) => {
+    setLoadingDetails(true);
+    setShowDetailsModal(true);
+    try {
+      const response = await api.get(`/logistics-companies/${companyId}`);
+      setCompanyDetails(response.data);
+    } catch (error: any) {
+      console.error('Error fetching company details:', error);
+      alert(error.response?.data?.message || 'Error loading company details');
+      setShowDetailsModal(false);
+    } finally {
+      setLoadingDetails(false);
     }
   };
 
@@ -676,6 +695,116 @@ function LogisticsCompaniesPageContent() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Company Details Modal */}
+      {showDetailsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Company Details</h2>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setCompanyDetails(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              {loadingDetails ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                </div>
+              ) : companyDetails?.company ? (
+                <div className="space-y-6">
+                  {/* Basic Information */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                        <p className="text-sm text-gray-900">{companyDetails.company.companyName || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Registration Number</label>
+                        <p className="text-sm text-gray-900">{companyDetails.company.registrationNumber || 'N/A'}</p>
+                      </div>
+                      {companyDetails.company.userId && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
+                            <p className="text-sm text-gray-900">
+                              {typeof companyDetails.company.userId === 'object' 
+                                ? companyDetails.company.userId.email 
+                                : 'N/A'}
+                            </p>
+                          </div>
+                          {typeof companyDetails.company.userId === 'object' && companyDetails.company.userId.name && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
+                              <p className="text-sm text-gray-900">{companyDetails.company.userId.name}</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Verification Status</label>
+                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                          companyDetails.company.verificationStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                          companyDetails.company.verificationStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          companyDetails.company.verificationStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {companyDetails.company.verificationStatus || 'N/A'}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                        <p className="text-sm text-gray-900">{companyDetails.company.rating || 0} / 5</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Total Shipments</label>
+                        <p className="text-sm text-gray-900">{companyDetails.company.totalShipments || 0}</p>
+                      </div>
+                      {companyDetails.company.createdAt && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Registered Date</label>
+                          <p className="text-sm text-gray-900">
+                            {new Date(companyDetails.company.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {companyDetails.company.description && (
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <p className="text-sm text-gray-900">{companyDetails.company.description}</p>
+                      </div>
+                    )}
+                    {companyDetails.company.services && companyDetails.company.services.length > 0 && (
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Services</label>
+                        <div className="flex flex-wrap gap-2">
+                          {companyDetails.company.services.map((service: string, index: number) => (
+                            <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">
+                              {service}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       )}

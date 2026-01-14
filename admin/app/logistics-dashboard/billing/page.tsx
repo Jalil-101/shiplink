@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import logisticsApi from '@/lib/logisticsApi';
 import { DollarSign, FileText, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface BillingStats {
   totalRevenue: number;
@@ -128,7 +129,7 @@ export default function BillingDashboard() {
           <div className="flex items-center justify-between mb-2">
             <DollarSign className="h-8 w-8 text-green-600" />
           </div>
-          <p className="text-3xl font-bold text-gray-900">${stats.totalRevenue.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-gray-900">{formatGHS(stats.totalRevenue)}</p>
           <p className="text-sm text-gray-600 mt-1">Total Revenue</p>
         </div>
 
@@ -192,7 +193,7 @@ export default function BillingDashboard() {
                   >
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{invoice.invoiceNumber}</td>
                     <td className="px-4 py-3 text-sm text-gray-900">{invoice.customerId.name}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">${invoice.total.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{formatGHS(invoice.total)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`}>
                         {invoice.status}

@@ -35,6 +35,9 @@ function UsersPageContent() {
   const [roleFilter, setRoleFilter] = useState(searchParams.get('role') || '');
   const [suspendedFilter, setSuspendedFilter] = useState(searchParams.get('isSuspended') || '');
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   const columns = [
     columnHelper.accessor('name', {
@@ -174,8 +177,19 @@ function UsersPageContent() {
     }
   };
 
-  const handleViewUser = (userId: string) => {
-    window.location.href = `/dashboard/users/${userId}`;
+  const handleViewUser = async (userId: string) => {
+    setLoadingDetails(true);
+    setShowDetailsModal(true);
+    try {
+      const response = await api.get(`/users/${userId}`);
+      setSelectedUser(response.data);
+    } catch (error: any) {
+      console.error('Error fetching user details:', error);
+      alert(error.response?.data?.message || 'Error loading user details');
+      setShowDetailsModal(false);
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   return (
@@ -292,6 +306,136 @@ function UsersPageContent() {
           </>
         )}
       </div>
+
+      {/* User Details Modal */}
+      {showDetailsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">User Details</h2>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedUser(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              {loadingDetails ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                </div>
+              ) : selectedUser ? (
+                <div className="space-y-6">
+                  {/* Basic Information */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <p className="text-sm text-gray-900">{selectedUser.user?.name || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <p className="text-sm text-gray-900">{selectedUser.user?.email || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                        <p className="text-sm text-gray-900">{selectedUser.user?.phone || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                          selectedUser.user?.role === 'driver' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {selectedUser.user?.role || 'user'}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                          selectedUser.user?.isSuspended ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {selectedUser.user?.isSuspended ? 'Suspended' : 'Active'}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Joined Date</label>
+                        <p className="text-sm text-gray-900">
+                          {selectedUser.user?.createdAt ? new Date(selectedUser.user.createdAt).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                    {selectedUser.user?.suspensionReason && (
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Suspension Reason</label>
+                        <p className="text-sm text-gray-900">{selectedUser.user.suspensionReason}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Driver Profile */}
+                  {selectedUser.driverProfile && (
+                    <div className="border-t border-gray-200 pt-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Driver Profile</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                          <p className="text-sm text-gray-900">{selectedUser.driverProfile.licenseNumber || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Type</label>
+                          <p className="text-sm text-gray-900 capitalize">{selectedUser.driverProfile.vehicleType || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Model</label>
+                          <p className="text-sm text-gray-900">{selectedUser.driverProfile.vehicleModel || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Plate</label>
+                          <p className="text-sm text-gray-900">{selectedUser.driverProfile.vehiclePlate || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                          <p className="text-sm text-gray-900">{selectedUser.driverProfile.rating || 0} / 5</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Total Deliveries</label>
+                          <p className="text-sm text-gray-900">{selectedUser.driverProfile.totalDeliveries || 0}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                            selectedUser.driverProfile.isAvailable ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {selectedUser.driverProfile.isAvailable ? 'Available' : 'Unavailable'}
+                          </span>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Verification Status</label>
+                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                            selectedUser.driverProfile.verificationStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                            selectedUser.driverProfile.verificationStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {selectedUser.driverProfile.verificationStatus || 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,6 +25,7 @@ import {
   Save,
   MessageSquare
 } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface OrderDetails {
   _id: string;
@@ -381,8 +382,8 @@ export default function OrderDetailsPage() {
                       <tr key={idx}>
                         <td className="px-4 py-3 text-sm text-gray-900">{item.productName}</td>
                         <td className="px-4 py-3 text-sm text-gray-900">{item.quantity}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">${item.priceAtTime.toFixed(2)}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">${item.subtotal.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{formatGHS(item.priceAtTime)}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{formatGHS(item.subtotal)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -441,15 +442,15 @@ export default function OrderDetailsPage() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Gross Amount</span>
-                <span className="font-medium text-gray-900">${order.gross_amount.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{formatGHS(order.gross_amount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Commission ({order.commission_rate}%)</span>
-                <span className="font-medium text-gray-900">${order.commission_amount.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{formatGHS(order.commission_amount)}</span>
               </div>
               <div className="border-t border-gray-200 pt-3 flex justify-between">
                 <span className="font-semibold text-gray-900">Your Payout</span>
-                <span className="font-bold text-purple-600">${order.provider_payout.toFixed(2)}</span>
+                <span className="font-bold text-purple-600">{formatGHS(order.provider_payout)}</span>
               </div>
             </div>
           </div>
@@ -707,11 +708,15 @@ export default function OrderDetailsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                 >
                   <option value="">Choose a driver...</option>
-                  {drivers.filter(d => d.isActive).map((driver) => (
-                    <option key={driver._id} value={driver._id}>
-                      {driver.userId.name} - {driver.vehicleType} {driver.vehicleModel} ({driver.vehiclePlate})
-                    </option>
-                  ))}
+                  {drivers.length === 0 ? (
+                    <option value="" disabled>No drivers available</option>
+                  ) : (
+                    drivers.map((driver) => (
+                      <option key={driver._id} value={driver._id}>
+                        {driver.userId?.name || 'Unknown'} - {driver.vehicleType} {driver.vehicleModel} ({driver.vehiclePlate}) {driver.isAvailable ? '(Available)' : '(Unavailable)'}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div className="flex justify-end space-x-3">

@@ -797,6 +797,15 @@ exports.updateOrderStatus = async (req, res) => {
       // Use fresh order for the rest of the operation to ensure consistency
       order = freshOrder;
       
+      // Validate state transition BEFORE modifying the order
+      // This ensures we check the transition from the current state
+      if (!order.canTransitionTo(status)) {
+        return res.status(400).json({
+          error: 'Invalid State Transition',
+          message: `Cannot transition from ${order.status} to ${status}`
+        });
+      }
+      
       // Assign driver to order
       order.provider_id = driver._id;
       order.providerModel = 'Driver';
@@ -810,7 +819,7 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Validate state transition
+    // Validate state transition (for non-driver acceptance cases)
     if (!order.canTransitionTo(status)) {
       return res.status(400).json({
         error: 'Invalid State Transition',

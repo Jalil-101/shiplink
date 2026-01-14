@@ -127,7 +127,7 @@ export default function InvoicesPage() {
                       {invoice.customerId.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      ${invoice.total.toFixed(2)}
+                      {formatGHS(invoice.total)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 inline-flex items-center text-xs font-medium rounded-full ${statusConfig.color}`}>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import logisticsApi from '@/lib/logisticsApi';
 import { BarChart3, Package, DollarSign, Truck, TrendingUp, CheckCircle, Star } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface AnalyticsData {
   revenue: {
@@ -154,7 +155,7 @@ export default function LogisticsAnalyticsPage() {
                 Revenue Overview
               </h2>
               <p className="text-3xl font-bold text-gray-900 mb-2">
-                ${analytics.revenue?.total?.toFixed(2) || '0.00'}
+                {formatGHS(analytics.revenue?.total || 0)}
               </p>
               <p className="text-sm text-gray-600">Total Revenue</p>
               {analytics.revenue?.monthly && analytics.revenue.monthly.length > 0 && (
@@ -164,7 +165,7 @@ export default function LogisticsAnalyticsPage() {
                     {analytics.revenue.monthly.slice(-6).map((month, idx) => (
                       <div key={idx} className="flex justify-between text-sm">
                         <span className="text-gray-600">{month.month}</span>
-                        <span className="font-medium text-gray-900">${month.amount.toFixed(2)}</span>
+                        <span className="font-medium text-gray-900">{formatGHS(month.amount)}</span>
                       </div>
                     ))}
                   </div>

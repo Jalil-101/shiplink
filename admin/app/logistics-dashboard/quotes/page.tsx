@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import logisticsApi from '@/lib/logisticsApi';
 import { FileText, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface Quote {
   _id: string;
@@ -144,7 +145,7 @@ export default function QuotesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${quote.calculatedCost.toFixed(2)}
+                      {formatGHS(quote.calculatedCost)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 inline-flex items-center text-xs font-medium rounded-full ${statusConfig.color}`}>

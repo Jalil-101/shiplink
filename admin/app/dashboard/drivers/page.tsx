@@ -49,6 +49,9 @@ function DriversPageContent() {
   const [showModal, setShowModal] = useState(false);
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'reupload' | 'suspend' | null>(null);
   const [notes, setNotes] = useState('');
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [driverDetails, setDriverDetails] = useState<any>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   const columns = [
     columnHelper.accessor('userId.name', {
@@ -199,8 +202,19 @@ function DriversPageContent() {
     setNotes('');
   };
 
-  const handleViewDriver = (driver: Driver) => {
-    window.location.href = `/dashboard/drivers/${driver._id}`;
+  const handleViewDriver = async (driver: Driver) => {
+    setLoadingDetails(true);
+    setShowDetailsModal(true);
+    try {
+      const response = await api.get(`/drivers/${driver._id}`);
+      setDriverDetails(response.data);
+    } catch (error: any) {
+      console.error('Error fetching driver details:', error);
+      alert(error.response?.data?.message || 'Error loading driver details');
+      setShowDetailsModal(false);
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   const handleSubmitAction = async () => {
@@ -403,6 +417,143 @@ function DriversPageContent() {
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Driver Details Modal */}
+      {showDetailsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Driver Details</h2>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setDriverDetails(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              {loadingDetails ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                </div>
+              ) : driverDetails?.driver ? (
+                <div className="space-y-6">
+                  {/* User Information */}
+                  {driverDetails.driver.userId && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">User Information</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                          <p className="text-sm text-gray-900">
+                            {typeof driverDetails.driver.userId === 'object' 
+                              ? driverDetails.driver.userId.name 
+                              : 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                          <p className="text-sm text-gray-900">
+                            {typeof driverDetails.driver.userId === 'object' 
+                              ? driverDetails.driver.userId.email 
+                              : 'N/A'}
+                          </p>
+                        </div>
+                        {typeof driverDetails.driver.userId === 'object' && driverDetails.driver.userId.phone && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <p className="text-sm text-gray-900">{driverDetails.driver.userId.phone}</p>
+                          </div>
+                        )}
+                        {typeof driverDetails.driver.userId === 'object' && driverDetails.driver.userId.isSuspended !== undefined && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Account Status</label>
+                            <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                              driverDetails.driver.userId.isSuspended ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                            }`}>
+                              {driverDetails.driver.userId.isSuspended ? 'Suspended' : 'Active'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Driver Profile */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Driver Profile</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                        <p className="text-sm text-gray-900">{driverDetails.driver.licenseNumber || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Type</label>
+                        <p className="text-sm text-gray-900 capitalize">{driverDetails.driver.vehicleType || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Model</label>
+                        <p className="text-sm text-gray-900">{driverDetails.driver.vehicleModel || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Plate</label>
+                        <p className="text-sm text-gray-900">{driverDetails.driver.vehiclePlate || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                        <p className="text-sm text-gray-900">{driverDetails.driver.rating?.toFixed(1) || 0} / 5 ⭐</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Total Deliveries</label>
+                        <p className="text-sm text-gray-900">{driverDetails.driver.totalDeliveries || 0}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                          driverDetails.driver.isAvailable ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {driverDetails.driver.isAvailable ? 'Available' : 'Unavailable'}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Verification Status</label>
+                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                          driverDetails.driver.verificationStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                          driverDetails.driver.verificationStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          driverDetails.driver.verificationStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-orange-100 text-orange-800'
+                        }`}>
+                          {driverDetails.driver.verificationStatus || 'N/A'}
+                        </span>
+                      </div>
+                      {driverDetails.driver.createdAt && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Joined Date</label>
+                          <p className="text-sm text-gray-900">
+                            {new Date(driverDetails.driver.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {driverDetails.driver.verificationNotes && (
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Verification Notes</label>
+                        <p className="text-sm text-gray-900">{driverDetails.driver.verificationNotes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

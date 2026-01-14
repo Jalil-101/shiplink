@@ -11,6 +11,7 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import { Search, Package, CheckCircle } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface Order {
   _id: string;
@@ -58,7 +59,7 @@ export default function OrdersPage() {
     }),
     columnHelper.accessor('total', {
       header: 'Total',
-      cell: (info) => `$${info.getValue().toFixed(2)}`,
+      cell: (info) => formatGHS(info.getValue()),
     }),
     columnHelper.accessor('status', {
       header: 'Status',

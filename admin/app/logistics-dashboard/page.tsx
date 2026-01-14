@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import { Package, Users, DollarSign, Truck, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import logisticsApi from '@/lib/logisticsApi';
+import { formatGHS } from '@/lib/currency';
 
 interface DashboardStats {
   totalShipments: number;
@@ -118,7 +119,7 @@ export default function LogisticsDashboardOverview() {
           <div className="flex items-center justify-between mb-2">
             <DollarSign className="h-8 w-8 text-yellow-600" />
           </div>
-          <p className="text-3xl font-bold text-gray-900">${stats.totalRevenue.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-gray-900">{formatGHS(stats.totalRevenue)}</p>
           <p className="text-sm text-gray-600 mt-1">Total Revenue</p>
         </div>
 

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getToken } from '@/lib/logisticsAuth';
 import logisticsApi from '@/lib/logisticsApi';
 import { FileText, ArrowLeft, Download, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
+import { formatGHS } from '@/lib/currency';
 
 interface Invoice {
   _id: string;
@@ -150,8 +151,8 @@ export default function InvoiceDetailsPage() {
                     <tr key={idx}>
                       <td className="px-4 py-3 text-sm text-gray-900">{item.description}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{item.quantity}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">${item.unitPrice.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">${item.total.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{formatGHS(item.unitPrice)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{formatGHS(item.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -187,17 +188,17 @@ export default function InvoiceDetailsPage() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium text-gray-900">${invoice.subtotal.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{formatGHS(invoice.subtotal)}</span>
               </div>
               {invoice.tax > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="font-medium text-gray-900">${invoice.tax.toFixed(2)}</span>
+                  <span className="font-medium text-gray-900">{formatGHS(invoice.tax)}</span>
                 </div>
               )}
               <div className="border-t border-gray-200 pt-3 flex justify-between">
                 <span className="font-semibold text-gray-900">Total</span>
-                <span className="font-bold text-purple-600">${invoice.total.toFixed(2)}</span>
+                <span className="font-bold text-purple-600">{formatGHS(invoice.total)}</span>
               </div>
             </div>
           </div>
