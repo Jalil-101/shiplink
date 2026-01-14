@@ -552,7 +552,7 @@ exports.getOrders = async (req, res) => {
     if (order_type) {
       // If showing available orders, still filter by type
       if (query.$or && query.$or.length > 2) {
-        // Apply order_type filter to the available orders part
+        // Apply order_type filter to the available orders part only
         query.$or = query.$or.map(condition => {
           if (condition.order_type) {
             return { ...condition, order_type };
@@ -563,12 +563,18 @@ exports.getOrders = async (req, res) => {
         query.order_type = order_type;
       }
     }
-    if (status) {
-      // If showing available orders, still filter by status
+    // Don't apply status filter when showing available orders (available orders must be status='created')
+    // Only apply status filter to user's own orders
+    if (status && !(isDriver && (available === 'true' || available === true))) {
       if (query.$or && query.$or.length > 2) {
-        // Apply status filter to the available orders part
+        // Apply status filter only to user's own orders, not available orders
         query.$or = query.$or.map(condition => {
-          if (condition.status) {
+          // Don't apply status filter to available orders condition (it must stay status='created')
+          if (condition.order_type && condition.status === 'created' && condition.provider_id === null) {
+            return condition; // Keep available orders condition as-is
+          }
+          // Apply status filter to user's own orders
+          if (!condition.order_type) {
             return { ...condition, status };
           }
           return condition;
@@ -751,9 +757,34 @@ exports.updateOrderStatus = async (req, res) => {
     const isDriver = userRole === 'driver';
 
     // Special handling for drivers accepting orders (first-come-first-serve)
-    if (isDriver && status === 'provider_assigned' && order.status === 'created' && order.order_type === 'delivery' && !order.provider_id) {
+    if (isDriver && status === 'provider_assigned' && order.order_type === 'delivery') {
       // Driver is accepting an available order
-      // Check if order is still available (not assigned to another driver)
+      // Refresh order from DB to check if it's still available (prevent race conditions)
+      const freshOrder = await Order.findById(orderId);
+      if (!freshOrder) {
+        return res.status(404).json({
+          error: 'Not Found',
+          message: 'Order not found'
+        });
+      }
+      
+      // Check if order is still available (not already assigned)
+      if (freshOrder.provider_id) {
+        return res.status(400).json({
+          error: 'Order Already Assigned',
+          message: 'This order has already been assigned to another driver'
+        });
+      }
+      
+      // Verify order is in correct state
+      if (freshOrder.status !== 'created') {
+        return res.status(400).json({
+          error: 'Invalid Order State',
+          message: `Order is in ${freshOrder.status} state and cannot be accepted`
+        });
+      }
+      
+      // Check if driver profile exists
       const Driver = require('../models/Driver.model');
       const driver = await Driver.findOne({ userId: req.user._id });
       if (!driver) {
@@ -763,6 +794,9 @@ exports.updateOrderStatus = async (req, res) => {
         });
       }
 
+      // Use fresh order for the rest of the operation to ensure consistency
+      order = freshOrder;
+      
       // Assign driver to order
       order.provider_id = driver._id;
       order.providerModel = 'Driver';
@@ -786,7 +820,19 @@ exports.updateOrderStatus = async (req, res) => {
 
     // Perform transition
     const oldStatus = order.status;
-    order.transitionTo(status, req.user._id, reason);
+    try {
+      order.transitionTo(status, req.user._id, reason);
+    } catch (transitionError) {
+      // If transition fails, return a proper error response
+      if (transitionError.message && transitionError.message.includes('Invalid state transition')) {
+        return res.status(400).json({
+          error: 'Invalid State Transition',
+          message: transitionError.message
+        });
+      }
+      // Re-throw if it's a different error
+      throw transitionError;
+    }
 
     // Handle status-specific logic
     if (status === 'completed') {

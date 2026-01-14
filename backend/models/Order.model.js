@@ -479,7 +479,10 @@ orderSchema.pre('save', async function(next) {
     try {
       const doc = await this.constructor.findById(this._id);
       if (doc && doc.status !== this.status) {
-        if (!this.canTransitionTo(this.status)) {
+        // Check transition from old status (doc.status) to new status (this.status)
+        // Use the document's canTransitionTo method with the new status
+        const allowedTransitions = VALID_TRANSITIONS[doc.status] || [];
+        if (!allowedTransitions.includes(this.status)) {
           return next(new Error(`Invalid state transition from ${doc.status} to ${this.status}`));
         }
       }
